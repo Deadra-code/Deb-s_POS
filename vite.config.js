@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
+  base: "/Deb-s_POS/",
   plugins: [
     react(),
     VitePWA({
