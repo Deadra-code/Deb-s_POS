@@ -116,7 +116,7 @@ const Analytics = () => {
       else if (period === 'TAHUN_INI') isValidTime = tDate.getFullYear() === now.getFullYear();
       else isValidTime = true; // Default All
 
-      if (isValidTime && t.status === 'Selesai') {
+      if (isValidTime && (t.status === 'Selesai' || t.status === 'Proses')) {
         // HITUNG TOTAL PER ITEM UNTUK AKURASI MILIK
         let trxRevenue = 0;
         let trxProfit = 0;
