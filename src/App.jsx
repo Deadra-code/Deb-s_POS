@@ -81,40 +81,83 @@ const ProductImage = ({ src, alt }) => {
 // A. ANALYTICS
 const Analytics = () => {
   const [data, setData] = useState({ transactions: [] });
-  const [period, setPeriod] = useState('7');
   const [loading, setLoading] = useState(true);
+  const [period, setPeriod] = useState('HARI_INI'); // HARI_INI, MINGGU_INI, BULAN_INI, TAHUN_INI
+  const [ownerFilter, setOwnerFilter] = useState('ALL'); // ALL, Debby, Mama
 
   useEffect(() => {
     fetchData('getReport').then(res => {
       setData(res); setLoading(false);
-    }).catch(err => {
-      console.error("Error fetching report:", err);
-      setLoading(false);
-    });
+    }).catch(e => setLoading(false));
   }, []);
 
   const stats = useMemo(() => {
     if (!data.transactions || !data.transactions.length) return { revenue: 0, profit: 0, orders: 0, chartData: [], topItems: [] };
 
+    let revenue = 0;
+    let profit = 0;
+    let filteredCount = 0;
+    const dailyMap = {};
+    const productCount = {};
+    const currentDate = new Date();
+    // --- HELPER DATE ---
+    const isSameDay = (d1, d2) => d1.getFullYear() === d2.getFullYear() && d1.getMonth() === d2.getMonth() && d1.getDate() === d2.getDate();
+    const getWeek = d => { const onejan = new Date(d.getFullYear(), 0, 1); return Math.ceil((((d - onejan) / 86400000) + onejan.getDay() + 1) / 7); };
+
+    // FILTER TRANSAKSI BERDASARKAN WAKTU
     const now = new Date();
-    const cutoff = new Date(now.setDate(now.getDate() - parseInt(period)));
-    // Asumsi data.transactions berisi object dengan properti 'date' string YYYY-MM-DD
-    const filtered = data.transactions.filter(t => new Date(t.date) >= cutoff);
+    data.transactions.forEach(t => {
+      const tDate = new Date(t.date); // yyyy-MM-dd
+      let isValidTime = false;
 
-    let revenue = 0, profit = 0, productCount = {};
-    let dailyMap = {};
+      if (period === 'HARI_INI') isValidTime = isSameDay(tDate, now);
+      else if (period === 'MINGGU_INI') isValidTime = getWeek(tDate) === getWeek(now) && tDate.getFullYear() === now.getFullYear();
+      else if (period === 'BULAN_INI') isValidTime = tDate.getMonth() === now.getMonth() && tDate.getFullYear() === now.getFullYear();
+      else if (period === 'TAHUN_INI') isValidTime = tDate.getFullYear() === now.getFullYear();
+      else isValidTime = true; // Default All
 
-    filtered.forEach(t => {
-      revenue += t.total;
-      profit += t.profit;
+      if (isValidTime && t.status === 'Selesai') {
+        // HITUNG TOTAL PER ITEM UNTUK AKURASI MILIK
+        let trxRevenue = 0;
+        let trxProfit = 0;
+        let hasItems = false;
 
-      const day = t.date.slice(5); // MM-DD
-      if (!dailyMap[day]) dailyMap[day] = { name: day, omzet: 0, profit: 0 };
-      dailyMap[day].omzet += t.total;
-      dailyMap[day].profit += t.profit;
+        if (t.items && Array.isArray(t.items)) {
+          t.items.forEach(i => {
+            // FILTER OWNER
+            const itemOwner = i.milik || "Debby"; // Default old data to Debby
+            if (ownerFilter === 'ALL' || itemOwner === ownerFilter) {
+              hasItems = true;
+              const itemRev = i.harga * i.qty;
+              // Fallback modal ke i.modal (snapshot) jika ada, jika tidak pakai logic backend lama (estimasi) -> Disini kita pakai 0 jika data lama tidak ada modal snapshot, atau user harus relakan data lama kurang akurat profitnya.
+              // Agar aman: Jika i.modal ada pakai itu. Jika tidak, coba cari di menuData global (tapi harga modal skrg mungkin beda).
+              // Sederhananya: Kita pakai i.modal jika ada.
+              const itemModal = i.modal || 0;
+              const itemProf = itemRev - (itemModal * i.qty);
 
-      if (t.items && Array.isArray(t.items)) {
-        t.items.forEach(i => productCount[i.nama] = (productCount[i.nama] || 0) + i.qty);
+              trxRevenue += itemRev;
+              trxProfit += itemProf;
+
+              // Top Items
+              productCount[i.nama] = (productCount[i.nama] || 0) + i.qty;
+            }
+          });
+        }
+
+        if (hasItems) {
+          filteredCount++;
+          revenue += trxRevenue;
+          profit += trxProfit;
+
+          // Chart Data Grouping
+          // Group by Time Unit based on Filter
+          let key = t.date; // Default YYYY-MM-DD
+          if (period === 'TAHUN_INI') key = t.date.slice(0, 7); // YYYY-MM
+
+          if (!dailyMap[key]) dailyMap[key] = { name: key, omzet: 0, profit: 0 };
+          dailyMap[key].omzet += trxRevenue;
+          dailyMap[key].profit += trxProfit;
+        }
       }
     });
 
@@ -124,23 +167,31 @@ const Analytics = () => {
       .sort((a, b) => b.qty - a.qty)
       .slice(0, 5);
 
-    return { revenue, profit, orders: filtered.length, chartData, topItems };
-  }, [data, period]);
+    return { revenue, profit, orders: filteredCount, chartData, topItems };
+  }, [data, period, ownerFilter]);
 
   if (loading) return <div className="flex h-full items-center justify-center text-emerald-600"><Loader className="animate-spin" size={32} /></div>;
 
   return (
     <div className="p-4 md:p-8 h-full overflow-y-auto bg-slate-50 pb-24 text-slate-800">
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-800">Dashboard</h1>
           <p className="text-slate-500 text-sm">Analisa performa bisnis.</p>
         </div>
-        <select className="bg-white border border-slate-300 p-2 rounded-lg text-sm font-bold shadow-sm outline-none" value={period} onChange={e => setPeriod(e.target.value)}>
-          <option value="7">7 Hari Terakhir</option>
-          <option value="30">30 Hari Terakhir</option>
-          <option value="90">3 Bulan Terakhir</option>
-        </select>
+        <div className="flex flex-col md:flex-row gap-3">
+          <select className="bg-white border border-slate-300 p-2 rounded-lg text-sm font-bold shadow-sm outline-none" value={period} onChange={e => setPeriod(e.target.value)}>
+            <option value="HARI_INI">Hari Ini</option>
+            <option value="MINGGU_INI">Minggu Ini</option>
+            <option value="BULAN_INI">Bulan Ini</option>
+            <option value="TAHUN_INI">Tahun Ini</option>
+          </select>
+          <select className="bg-white border border-slate-300 p-2 rounded-lg text-sm font-bold shadow-sm outline-none" value={ownerFilter} onChange={e => setOwnerFilter(e.target.value)}>
+            <option value="ALL">Semua Pemilik</option>
+            <option value="Debby">Debby</option>
+            <option value="Mama">Mama</option>
+          </select>
+        </div>
       </div>
 
       {/* KPI CARDS */}
@@ -355,11 +406,12 @@ const Inventory = ({ menu, refreshData }) => {
             <div><label className="text-xs font-bold uppercase text-slate-500">Stok</label><input type="number" required className="w-full border p-2.5 rounded-lg bg-white" value={form.Stock} onChange={e => setForm({ ...form, Stock: e.target.value })} /></div>
             <div><label className="text-xs font-bold uppercase text-slate-500">Kategori</label><select className="w-full border p-2.5 rounded-lg bg-white" value={form.Kategori} onChange={e => setForm({ ...form, Kategori: e.target.value })}><option>Makanan</option><option>Minuman</option><option>Cemilan</option></select></div>
           </div>
+          <div><label className="text-xs font-bold uppercase text-slate-500">Milik</label><select className="w-full border p-2.5 rounded-lg bg-white" value={form.Milik || 'Debby'} onChange={e => setForm({ ...form, Milik: e.target.value })}><option>Debby</option><option>Mama</option></select></div>
           <div><label className="text-xs font-bold uppercase text-slate-500">Foto URL</label><input className="w-full border p-2.5 rounded-lg bg-white" value={form.Foto_URL} onChange={e => setForm({ ...form, Foto_URL: e.target.value })} /></div>
           <button className="w-full bg-emerald-600 text-white py-3 rounded-lg font-bold shadow-lg hover:bg-emerald-700">Simpan Data</button>
         </form>
       </Modal>
-    </div>
+    </div >
   );
 };
 
@@ -391,7 +443,7 @@ const POS = ({ menu, refreshData }) => {
   const handleCheckout = () => {
     setLoading(true);
     const payload = {
-      cart: cart.map(i => ({ nama: i.Nama_Menu, qty: i.qty, harga: i.Harga })),
+      cart: cart.map(i => ({ nama: i.Nama_Menu, qty: i.qty, harga: i.Harga, modal: i.Modal, milik: i.Milik || "Debby" })),
       total,
       type: tab,
       paymentMethod: payMethod,
