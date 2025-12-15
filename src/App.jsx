@@ -602,7 +602,7 @@ const Kitchen = () => {
   const done = (id) => {
     setOrders(p => p.filter(o => o.ID_Order !== id));
     const payload = { id, status: 'Selesai' };
-    fetchData('updateStatus', 'POST', payload);
+    fetchData('updateOrderStatus', 'POST', payload);
   };
 
   return (
