@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { WifiOff, RefreshCw } from 'lucide-react';
 import { syncOfflineOrders } from '../../services/api';
 
