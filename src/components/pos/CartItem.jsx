@@ -1,15 +1,29 @@
 import Icon from '../ui/Icon';
 
 const CartItem = ({ item, onUpdateQty }) => {
+    // Separate variants and regular modifiers
+    const variants = item.modifiers?.filter(m => m.isVariant) || [];
+    const addons = item.modifiers?.filter(m => !m.isVariant) || [];
+
     return (
         <div className="flex justify-between items-center border-b border-slate-50 pb-3 last:border-0 group">
-            <div>
-                <div className="font-bold text-sm text-slate-800">{item.Nama_Menu}</div>
-                {item.modifiers?.length > 0 && (
-                    <div className="text-[10px] text-slate-400 italic">
-                        + {item.modifiers.map(m => m.name.replace('Tambah ', '')).join(', ')}
+            <div className="flex-1 min-w-0 pr-4">
+                <div className="font-bold text-sm text-slate-800 truncate">{item.Nama_Menu}</div>
+
+                {/* Variants Display */}
+                {variants.length > 0 && (
+                    <div className="text-[10px] text-emerald-600 font-bold">
+                        {variants.map(v => v.name.includes(':') ? v.name.split(':')[1].trim() : v.name).join(', ')}
                     </div>
                 )}
+
+                {/* Add-ons Display */}
+                {addons.length > 0 && (
+                    <div className="text-[10px] text-blue-500 italic">
+                        + {addons.map(m => m.name.replace('Tambah ', '')).join(', ')}
+                    </div>
+                )}
+
                 <div className="text-xs text-slate-500">Rp {parseInt(item.Harga).toLocaleString()}</div>
             </div>
             <div className="flex items-center gap-2 bg-slate-50 p-1 rounded-lg">

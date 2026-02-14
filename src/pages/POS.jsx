@@ -27,8 +27,9 @@ const POS = ({ menu, refreshData }) => {
     const [customItem, setCustomItem] = useState({ name: '', price: '', milik: 'Debby' });
 
     const addToCart = useCallback((item, modifiers = []) => {
-        // Find if item with SAME modifiers already exists
-        const itemId = `${item.ID}-${modifiers.map(m => m.id).sort().join(',')}`;
+        // Find if item with SAME modifiers and variants already exists
+        const modifierIds = modifiers.map(m => m.id).sort().join(',');
+        const itemId = `${item.ID}-${modifierIds}`;
 
         if (!item.ID.toString().startsWith('custom-')) {
             if (item.Status === 'Habis' || item.Stock <= 0) return setToast({ msg: 'Stok Habis!', type: 'error' });
@@ -41,7 +42,7 @@ const POS = ({ menu, refreshData }) => {
                 return p;
             }
 
-            const itemPrice = parseInt(item.Harga) + modifiers.reduce((a, b) => a + b.price, 0);
+            const itemPrice = parseInt(item.Harga) + modifiers.reduce((a, b) => a + (b.price || 0), 0);
 
             if (ex) {
                 return p.map(i => i.cartId === itemId ? { ...i, qty: i.qty + 1 } : i);
@@ -60,7 +61,8 @@ const POS = ({ menu, refreshData }) => {
     }, []);
 
     const handleItemClick = (item) => {
-        if (item.Kategori === 'Makanan') {
+        // Open Modal if it has Variants OR is Category Makanan (for hardcoded add-ons)
+        if (item.Varian || item.Kategori === 'Makanan') {
             setSelectedItemForMod(item);
             setActiveModifiers([]);
             setModifierModalOpen(true);
@@ -69,8 +71,9 @@ const POS = ({ menu, refreshData }) => {
         }
     };
 
-    const confirmModifierAdd = () => {
-        addToCart(selectedItemForMod, activeModifiers);
+    const confirmModifierAdd = (variants = []) => {
+        const allModifiers = [...variants, ...activeModifiers];
+        addToCart(selectedItemForMod, allModifiers);
         setModifierModalOpen(false);
         setSelectedItemForMod(null);
         setActiveModifiers([]);
@@ -217,8 +220,8 @@ const POS = ({ menu, refreshData }) => {
                 isOpen={modifierModalOpen}
                 onClose={() => setModifierModalOpen(false)}
                 item={selectedItemForMod}
-                activeModifiers={activeModifiers}
-                setActiveModifiers={setActiveModifiers}
+                activeAddons={activeModifiers}
+                setActiveAddons={setActiveModifiers}
                 onConfirm={confirmModifierAdd}
             />
         </div>

@@ -14,13 +14,13 @@ function handleRequest(e) {
   try {
     var action = e.parameter.action;
     var result = {};
-    
+
     // --- AUTHENTICATION CHECK ---
-    
+
     if (action === 'login') {
-       var payload = JSON.parse(e.postData.contents);
-       result = attemptLogin(payload.username, payload.password);
-    } 
+      var payload = JSON.parse(e.postData.contents);
+      result = attemptLogin(payload.username, payload.password);
+    }
     // Action Setup (Buat tabel user) tidak butuh login
     else if (action === 'setup') {
       result = setupDatabase();
@@ -33,7 +33,7 @@ function handleRequest(e) {
       var token = e.parameter.token;
       if(!token) return responseJSON({error:"Unauthorized"});
       */
-      
+
       // Routing Regular
       if (action === 'getMenu') result = getMenuData();
       else if (action === 'saveProduct') result = saveProduct(JSON.parse(e.postData.contents));
@@ -60,43 +60,43 @@ function responseJSON(data) {
 function attemptLogin(username, password) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   let sheet = ss.getSheetByName("Data_User");
-  
+
   if (!sheet) {
     // Auto-create jika belum ada (Fallback)
     setupDatabase();
     sheet = ss.getSheetByName("Data_User");
   }
-  
+
   const data = sheet.getDataRange().getValues(); // [Header, [u1,p1], [u2,p2]...]
-  
+
   // Skip Header (row 0)
-  for(let i=1; i<data.length; i++) {
+  for (let i = 1; i < data.length; i++) {
     // Kolom 0 = Username, Kolom 1 = Password
-    if(String(data[i][0]).toLowerCase() === String(username).toLowerCase() && String(data[i][1]) === String(password)) {
-       // SUKSES
-       const token = Utilities.base64Encode(username + "_" + new Date().getTime());
-       return { success: true, token: token, role: "admin" };
+    if (String(data[i][0]).toLowerCase() === String(username).toLowerCase() && String(data[i][1]) === String(password)) {
+      // SUKSES
+      const token = Utilities.base64Encode(username + "_" + new Date().getTime());
+      return { success: true, token: token, role: "admin" };
     }
   }
-  
+
   return { error: "Username atau Password Salah!" };
 }
 // --- DATABASE LOGIC (Updated Setup) ---
 function setupDatabase() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  
+
   // 1. Users (BARU)
   if (!ss.getSheetByName("Data_User")) {
     let s = ss.insertSheet("Data_User");
     s.appendRow(["Username", "Password", "Role"]);
     // Default Admin
-    s.appendRow(["admin", "admin123", "Owner"]); 
+    s.appendRow(["admin", "admin123", "Owner"]);
   }
   // 2. Menu
   if (!ss.getSheetByName("Data_Menu")) {
     let s = ss.insertSheet("Data_Menu");
-    s.appendRow(["ID", "Nama_Menu", "Kategori", "Harga", "Foto_URL", "Status", "Stock", "Milik", "Modal"]);
-    s.appendRow(["MN-001", "Nasi Goreng Spesial", "Makanan", 25000, "", "Tersedia", 50, "Debby", 15000]);
+    s.appendRow(["ID", "Nama_Menu", "Kategori", "Harga", "Foto_URL", "Status", "Stock", "Milik", "Modal", "Varian"]);
+    s.appendRow(["MN-001", "Nasi Goreng Spesial", "Makanan", 25000, "", "Tersedia", 50, "Debby", 15000, "Level: Sedang, Pedas | Pilihan Telur: Dadar, Ceplok"]);
   }
   // 3. Transaksi
   if (!ss.getSheetByName("Riwayat_Transaksi")) {
@@ -110,7 +110,7 @@ function setupDatabase() {
     s.appendRow(["Tax_Rate", "0"]);
     s.appendRow(["Service_Charge", "0"]);
   }
-  
+
   return { success: true, message: "Database + User Table Ready" };
 }
 
@@ -121,11 +121,11 @@ function getMenuData() {
   const data = sheet.getDataRange().getDisplayValues();
   if (data.length <= 1) return [];
   const h = data[0];
-  
+
   return data.slice(1).map((row, i) => {
     let obj = { _rowIndex: i + 2 };
     h.forEach((head, idx) => obj[head] = row[idx]);
-    
+
     // Sanitasi Angka (Hapus 'Rp', koma, dll)
     obj.Harga = parseInt(String(obj.Harga).replace(/[^0-9]/g, '')) || 0;
     obj.Modal = parseInt(String(obj.Modal).replace(/[^0-9]/g, '')) || 0;
@@ -137,22 +137,23 @@ function getMenuData() {
 function saveProduct(data) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheet = ss.getSheetByName("Data_Menu");
-  
+
   if (data.isNew) {
     const newID = "MN-" + new Date().getTime().toString().substr(-5);
     // Urutan: ID(1), Nama(2), Kategori(3), Harga(4), Foto(5), Status(6), Stock(7), Milik(8), Modal(9)
     sheet.appendRow([newID, data.Nama_Menu, data.Kategori, data.Harga, data.Foto_URL, data.Status, data.Stock, data.Milik, data.Modal]);
   } else {
     const r = data._rowIndex;
-    if(r) {
-       sheet.getRange(r, 2).setValue(data.Nama_Menu);
-       sheet.getRange(r, 3).setValue(data.Kategori);
-       sheet.getRange(r, 4).setValue(data.Harga);
-       sheet.getRange(r, 5).setValue(data.Foto_URL);
-       sheet.getRange(r, 6).setValue(data.Status);
-       sheet.getRange(r, 7).setValue(data.Stock);
-       sheet.getRange(r, 8).setValue(data.Milik);
-       sheet.getRange(r, 9).setValue(data.Modal);
+    if (r) {
+      sheet.getRange(r, 2).setValue(data.Nama_Menu);
+      sheet.getRange(r, 3).setValue(data.Kategori);
+      sheet.getRange(r, 4).setValue(data.Harga);
+      sheet.getRange(r, 5).setValue(data.Foto_URL);
+      sheet.getRange(r, 6).setValue(data.Status);
+      sheet.getRange(r, 7).setValue(data.Stock);
+      sheet.getRange(r, 8).setValue(data.Milik);
+      sheet.getRange(r, 9).setValue(data.Modal);
+      if (data.Varian !== undefined) sheet.getRange(r, 10).setValue(data.Varian);
     }
   }
   return { success: true };
@@ -160,7 +161,7 @@ function saveProduct(data) {
 
 function deleteProduct(rowIndex) {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Data_Menu");
-  if(rowIndex > 1) sheet.deleteRow(rowIndex);
+  if (rowIndex > 1) sheet.deleteRow(rowIndex);
   return { success: true };
 }
 
@@ -187,43 +188,43 @@ function saveOrder(payload) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheetTrx = ss.getSheetByName("Riwayat_Transaksi");
   const sheetMenu = ss.getSheetByName("Data_Menu");
-  
+
   const id = "ORD-" + new Date().getTime().toString().substr(-6);
   const now = new Date();
   const jam = Utilities.formatDate(now, Session.getScriptTimeZone(), "HH:mm");
   const tgl = Utilities.formatDate(now, Session.getScriptTimeZone(), "yyyy-MM-dd");
-  
+
   // Simpan Transaksi
   sheetTrx.appendRow([
-    id, tgl, jam, payload.type, JSON.stringify(payload.cart), 
-    payload.total, payload.paymentMethod, "Proses", 
+    id, tgl, jam, payload.type, JSON.stringify(payload.cart),
+    payload.total, payload.paymentMethod, "Proses",
     payload.taxVal, payload.serviceVal
   ]);
-  
+
   // Potong Stok
   const menuData = sheetMenu.getDataRange().getValues();
   payload.cart.forEach(item => {
-    for(let i=1; i<menuData.length; i++) {
-       // Match by Name (Kolom 2 / Index 1)
-       if(menuData[i][1] === item.nama) {
-         const curr = parseInt(menuData[i][6] || 0); // Kolom Stock (Index 6)
-         const neu = Math.max(0, curr - item.qty);
-         sheetMenu.getRange(i+1, 7).setValue(neu);
-         if(neu === 0) sheetMenu.getRange(i+1, 6).setValue("Habis");
-         break;
-       }
+    for (let i = 1; i < menuData.length; i++) {
+      // Match by Name (Kolom 2 / Index 1)
+      if (menuData[i][1] === item.nama) {
+        const curr = parseInt(menuData[i][6] || 0); // Kolom Stock (Index 6)
+        const neu = Math.max(0, curr - item.qty);
+        sheetMenu.getRange(i + 1, 7).setValue(neu);
+        if (neu === 0) sheetMenu.getRange(i + 1, 6).setValue("Habis");
+        break;
+      }
     }
   });
-  
+
   return { success: true, id: id };
 }
 
 function updateOrderStatus(id, status) {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Riwayat_Transaksi");
   const data = sheet.getDataRange().getValues();
-  for(let i=1; i<data.length; i++) {
-    if(String(data[i][0]) === String(id)) {
-      sheet.getRange(i+1, 8).setValue(status); // Kolom Status
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][0]) === String(id)) {
+      sheet.getRange(i + 1, 8).setValue(status); // Kolom Status
       break;
     }
   }
@@ -234,9 +235,9 @@ function updateOrderStatus(id, status) {
 function getActiveOrders() {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Riwayat_Transaksi");
   if (!sheet) return [];
-  
+
   // Gunakan getDisplayValues agar format Jam aman
-  const data = sheet.getDataRange().getDisplayValues(); 
+  const data = sheet.getDataRange().getDisplayValues();
   if (data.length <= 1) return [];
 
   const h = data[0];
@@ -248,7 +249,7 @@ function getActiveOrders() {
     status: h.indexOf("Status")
   };
 
-  if(idx.id === -1) return [];
+  if (idx.id === -1) return [];
 
   return data.slice(1).map(r => ({
     ID_Order: r[idx.id],
@@ -257,8 +258,8 @@ function getActiveOrders() {
     Items_JSON: r[idx.items],
     Status: r[idx.status]
   }))
-  .filter(o => String(o.Status).trim().toLowerCase() === 'proses')
-  .reverse();
+    .filter(o => String(o.Status).trim().toLowerCase() === 'proses')
+    .reverse();
 }
 
 // --- SALES REPORT ---
@@ -266,13 +267,13 @@ function getSalesReport() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheetTrx = ss.getSheetByName("Riwayat_Transaksi");
   const sheetMenu = ss.getSheetByName("Data_Menu");
-  
+
   if (!sheetTrx || !sheetMenu) return { transactions: [] };
 
   // 1. Ambil Data Modal (Cost) dari Menu
   const menuRaw = sheetMenu.getDataRange().getValues();
-  let costMap = {}; 
-  if(menuRaw.length > 1) {
+  let costMap = {};
+  if (menuRaw.length > 1) {
     menuRaw.slice(1).forEach(r => {
       // Nama=Col 2(idx 1), Modal=Col 9(idx 8)
       costMap[r[1]] = parseInt(String(r[8]).replace(/[^0-9]/g, '')) || 0;
@@ -304,7 +305,7 @@ function getSalesReport() {
         let itemCost = costMap[i.nama] || 0;
         totalCost += (itemCost * i.qty);
       });
-    } catch(e) {}
+    } catch (e) { }
 
     return {
       date: row[idx.tgl],
