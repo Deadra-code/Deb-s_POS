@@ -23,6 +23,9 @@ root/
 │   ├── index.css           # Global styles & Tailwind directives
 │   ├── main.jsx            # Application entry point
 ├── .github/workflows/      # CI/CD (Deploy to GitHub Pages)
+├── ARCHITECTURE.md         # This file
+├── RDP.md                  # Requirements Definition & Roadmap
+├── CHECKLIST.md            # Development Task Checklist
 ├── package.json            # Dependencies and scripts
 ├── tailwind.config.js      # Tailwind configuration
 └── vite.config.js          # Vite configuration
