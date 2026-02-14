@@ -2,6 +2,7 @@ import { useState } from 'react';
 import './App.css';
 import LoginPage from './pages/LoginPage';
 import DashboardLayout from './layouts/DashboardLayout';
+import NetworkStatus from './components/ui/NetworkStatus';
 
 /**
  * Main App Component
@@ -27,11 +28,14 @@ function App() {
   }
 
   return (
-    <DashboardLayout
-      view={view}
-      setView={setView}
-      onLogout={handleLogout}
-    />
+    <>
+      <NetworkStatus />
+      <DashboardLayout
+        view={view}
+        setView={setView}
+        onLogout={handleLogout}
+      />
+    </>
   );
 }
 

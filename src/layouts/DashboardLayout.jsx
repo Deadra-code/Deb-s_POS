@@ -7,7 +7,6 @@ import POS from '../pages/POS';
 import Inventory from '../pages/Inventory';
 import OrderHistory from '../pages/OrderHistory';
 import Kitchen from '../pages/Kitchen';
-import NetworkStatus from '../components/ui/NetworkStatus';
 
 const DashboardLayout = ({ view, setView, onLogout }) => {
     const [menuData, setMenuData] = useState([]);

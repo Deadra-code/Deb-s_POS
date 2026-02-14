@@ -11,8 +11,14 @@ export const fetchData = async (action, method = 'GET', body = null) => {
     let url = `${API_URL}?action=${action}`;
 
     if (method === 'POST') {
-        // Trik GAS: Kirim data stringified via POST body
-        // Gunakan text/plain untuk menghindari preflight CORS issues pada GAS
+        // --- OFFLINE HANDLING FOR SAVE ORDER ---
+        if (action === 'saveOrder' && !navigator.onLine) {
+            const pending = JSON.parse(localStorage.getItem('POS_PENDING_ORDERS') || '[]');
+            pending.push({ body, timestamp: Date.now() });
+            localStorage.setItem('POS_PENDING_ORDERS', JSON.stringify(pending));
+            return { success: true, offline: true, status: 'QUEUED' };
+        }
+
         return fetch(url, {
             method: "POST",
             body: JSON.stringify(body)
@@ -20,4 +26,36 @@ export const fetchData = async (action, method = 'GET', body = null) => {
     }
 
     return fetch(url).then(res => res.json());
+};
+
+let isSyncing = false;
+
+/**
+ * Syncs pending orders from localStorage to the backend.
+ */
+export const syncOfflineOrders = async () => {
+    if (isSyncing) return;
+
+    const pending = JSON.parse(localStorage.getItem('POS_PENDING_ORDERS') || '[]');
+    if (pending.length === 0) return;
+
+    isSyncing = true;
+    try {
+        // Process sequentially to avoid flooding
+        for (const order of pending) {
+            try {
+                await fetch(`${API_URL}?action=saveOrder`, {
+                    method: "POST",
+                    body: JSON.stringify(order.body)
+                });
+            } catch (e) {
+                console.error("Sync failed for an order", e);
+                // Continue to try next orders? Or stop? 
+                // Better to stop to preserve order, but for now we try all.
+            }
+        }
+        localStorage.removeItem('POS_PENDING_ORDERS');
+    } finally {
+        isSyncing = false;
+    }
 };

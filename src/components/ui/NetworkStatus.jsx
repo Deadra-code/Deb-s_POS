@@ -1,15 +1,23 @@
-import { useState, useEffect } from 'react';
-import { WifiOff } from 'lucide-react';
+import { WifiOff, RefreshCw } from 'lucide-react';
+import { syncOfflineOrders } from '../../services/api';
 
 const NetworkStatus = () => {
     const [isOnline, setIsOnline] = useState(navigator.onLine);
 
     useEffect(() => {
-        const handleOnline = () => setIsOnline(true);
+        const handleOnline = () => {
+            setIsOnline(true);
+            syncOfflineOrders(); // Trigger sync when back online
+        };
         const handleOffline = () => setIsOnline(false);
 
         window.addEventListener('online', handleOnline);
         window.addEventListener('offline', handleOffline);
+
+        // Initial check if online but have pending orders
+        if (navigator.onLine) {
+            syncOfflineOrders();
+        }
 
         return () => {
             window.removeEventListener('online', handleOnline);

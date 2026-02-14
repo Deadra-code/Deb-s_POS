@@ -1,8 +1,10 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Loader } from 'lucide-react';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { fetchData } from '../services/api';
 import Icon from '../components/ui/Icon';
+import RevenueChart from '../components/analytics/RevenueChart';
+import SetoranReport from '../components/analytics/SetoranReport';
+import TopItemsList from '../components/analytics/TopItemsList';
 
 const Analytics = () => {
     const [data, setData] = useState({ transactions: [] });
@@ -24,6 +26,10 @@ const Analytics = () => {
         let filteredCount = 0;
         const dailyMap = {};
         const productCount = {};
+        let cashInDrawer = 0;
+        let digitalBank = 0;
+        let debbyTotal = 0;
+        let mamaTotal = 0;
 
         // --- HELPER DATE ---
         const isSameDay = (d1, d2) => d1.getFullYear() === d2.getFullYear() && d1.getMonth() === d2.getMonth() && d1.getDate() === d2.getDate();
@@ -42,6 +48,19 @@ const Analytics = () => {
             else isValidTime = true; // Default All
 
             if (isValidTime && (t.status === 'Selesai' || t.status === 'Proses')) {
+                const val = parseInt(t.total || 0);
+                revenue += val;
+
+                // --- SETORAN LOGIC (For Today) ---
+                if (isSameDay(tDate, now)) {
+                    if (t.paymentMethod === 'Tunai') cashInDrawer += val;
+                    else digitalBank += val;
+
+                    if (t.owner === 'Debby') debbyTotal += val;
+                    else if (t.owner === 'Mama') mamaTotal += val;
+                }
+
+                filteredCount++;
                 let trxRevenue = 0;
                 let trxProfit = 0;
                 let hasItems = false;
@@ -64,8 +83,6 @@ const Analytics = () => {
                 }
 
                 if (hasItems) {
-                    filteredCount++;
-                    revenue += trxRevenue;
                     profit += trxProfit;
 
                     let key = t.date;
@@ -84,7 +101,13 @@ const Analytics = () => {
             .sort((a, b) => b.qty - a.qty)
             .slice(0, 5);
 
-        return { revenue, profit, orders: filteredCount, chartData, topItems };
+        return {
+            revenue, profit, orders: filteredCount, chartData, topItems,
+            cashInDrawer,
+            digitalBank,
+            debbyTotal,
+            mamaTotal
+        };
     }, [data, period, ownerFilter]);
 
     if (loading) return <div className="flex h-full items-center justify-center text-emerald-600"><Loader className="animate-spin" size={32} /></div>;
@@ -132,40 +155,13 @@ const Analytics = () => {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-                <div className="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                    <h3 className="font-bold text-slate-700 mb-6">Tren Penjualan & Profit</h3>
-                    <div className="h-72 w-full">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={stats.chartData}>
-                                <defs>
-                                    <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#10b981" stopOpacity={0.2} /><stop offset="95%" stopColor="#10b981" stopOpacity={0} /></linearGradient>
-                                    <linearGradient id="colorProf" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#3b82f6" stopOpacity={0.2} /><stop offset="95%" stopColor="#3b82f6" stopOpacity={0} /></linearGradient>
-                                </defs>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} dy={10} />
-                                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} />
-                                <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }} />
-                                <Area type="monotone" dataKey="omzet" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorRev)" name="Omzet" />
-                                <Area type="monotone" dataKey="profit" stroke="#3b82f6" strokeWidth={3} fillOpacity={1} fill="url(#colorProf)" name="Profit" />
-                            </AreaChart>
-                        </ResponsiveContainer>
-                    </div>
-                </div>
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                    <h3 className="font-bold text-slate-700 mb-6">Produk Terlaris</h3>
-                    <div className="space-y-4">
-                        {stats.topItems.map((item, i) => (
-                            <div key={i} className="flex items-center justify-between border-b border-slate-50 pb-2 last:border-0">
-                                <div className="flex items-center gap-3">
-                                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs ${i === 0 ? 'bg-yellow-100 text-yellow-700' : i === 1 ? 'bg-gray-100 text-gray-700' : 'bg-orange-50 text-orange-700'}`}>#{i + 1}</div>
-                                    <div className="text-sm font-medium text-slate-700">{item.name}</div>
-                                </div>
-                                <div className="text-sm font-bold text-emerald-600">{item.qty} Sold</div>
-                            </div>
-                        ))}
-                        {stats.topItems.length === 0 && <div className="text-center text-slate-400 py-10">Belum ada data penjualan</div>}
-                    </div>
-                </div>
+                <RevenueChart data={stats.chartData} />
+
+                {/* --- SETORAN REPORT SECTION --- */}
+                {/* --- SETORAN REPORT SECTION --- */}
+                {period === 'HARI_INI' && <SetoranReport stats={stats} />}
+
+                <TopItemsList items={stats.topItems} />
             </div>
         </div>
     );

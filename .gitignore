@@ -8,9 +8,15 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
+# Build and Test Outputs
 dist
 dist-ssr
-*.local
+build_log.txt
+lint_output.txt
+lint_results.txt
+test_output.txt
+playwright-report/
+test-results/
 
 # Editor directories and files
 .vscode/*
