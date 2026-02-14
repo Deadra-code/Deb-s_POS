@@ -4,30 +4,27 @@ import { fetchData } from '../services/api';
 import Icon from '../components/ui/Icon';
 import Modal from '../components/ui/Modal';
 import ProductImage from '../components/ui/ProductImage';
+import ProductForm from '../components/inventory/ProductForm';
 
 const Inventory = ({ menu, refreshData }) => {
     const [modalOpen, setModalOpen] = useState(false);
     const [editData, setEditData] = useState(null);
     const [loading, setLoading] = useState(false);
-    const [form, setForm] = useState({ Nama_Menu: '', Kategori: 'Makanan', Harga: 0, Modal: 0, Stock: 0, Status: 'Tersedia', Foto_URL: '', Milik: 'Debby' });
 
     const handleAdd = () => {
         setEditData(null);
-        setForm({ Nama_Menu: '', Kategori: 'Makanan', Harga: 0, Modal: 0, Stock: 0, Status: 'Tersedia', Foto_URL: '', Milik: 'Debby' });
         setModalOpen(true);
     };
 
     const handleEdit = (item) => {
         setEditData(item);
-        setForm(item);
         setModalOpen(true);
     };
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
+    const handleSubmit = (formData) => {
         setLoading(true);
         const rowIndex = editData ? editData._rowIndex : null;
-        const payload = { ...form, isNew: !editData, _rowIndex: rowIndex };
+        const payload = { ...formData, isNew: !editData, _rowIndex: rowIndex };
 
         fetchData('saveProduct', 'POST', payload)
             .then(() => {
@@ -59,7 +56,8 @@ const Inventory = ({ menu, refreshData }) => {
 
             <div className="flex justify-between items-center mb-6">
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-800">Inventory Management</h1>
+                    <h1 className="text-2xl font-bold text-slate-800">Management Menu</h1>
+                    <p className="text-slate-500 text-sm">Kelola daftar menu dan varian rasa.</p>
                 </div>
                 <button onClick={handleAdd} className="bg-emerald-600 text-white px-4 py-2.5 rounded-xl font-bold flex gap-2 shadow-lg hover:bg-emerald-700 active:scale-95 transition-transform"><Icon name="plus" size={20} /> Produk Baru</button>
             </div>
@@ -75,7 +73,10 @@ const Inventory = ({ menu, refreshData }) => {
                             <div className="flex-1 min-w-0 flex flex-col justify-between">
                                 <div>
                                     <div className="flex justify-between items-start">
-                                        <h3 className="font-bold text-gray-800 text-sm truncate pr-2 w-full">{item.Nama_Menu}</h3>
+                                        <h3 className="font-bold text-gray-800 text-sm truncate pr-2 w-full">
+                                            {item.Nama_Menu}
+                                            {item.Varian && <span className="ml-1 text-[8px] bg-blue-100 text-blue-600 px-1 rounded uppercase">Var</span>}
+                                        </h3>
                                     </div>
                                     <div className="text-xs text-gray-500 mb-1">{item.Kategori}</div>
                                 </div>
@@ -86,7 +87,7 @@ const Inventory = ({ menu, refreshData }) => {
                                         <div className="font-bold text-emerald-600 text-sm">Rp {parseInt(item.Harga).toLocaleString()}</div>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${item.Stock < 5 ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-700'}`}>{item.Stock} Unit</span>
+                                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${item.Stock < 5 ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-700'}`}>{item.Stock}</span>
                                         <div className="flex gap-1">
                                             <button onClick={() => handleEdit(item)} className="p-1.5 bg-blue-50 rounded-md text-blue-600"><Icon name="pencil" size={14} /></button>
                                             <button onClick={() => handleDelete(item)} className="p-1.5 bg-red-50 rounded-md text-red-600"><Icon name="trash-2" size={14} /></button>
@@ -107,7 +108,6 @@ const Inventory = ({ menu, refreshData }) => {
                                     <th className="p-4">Produk</th>
                                     <th className="p-4">Harga Jual</th>
                                     <th className="p-4">Modal</th>
-                                    <th className="p-4">Profit</th>
                                     <th className="p-4">Stok</th>
                                     <th className="p-4">Aksi</th>
                                 </tr>
@@ -119,16 +119,18 @@ const Inventory = ({ menu, refreshData }) => {
                                             <div className="w-10 h-10 rounded-lg bg-slate-50 overflow-hidden shrink-0 border border-slate-100">
                                                 <ProductImage src={item.Foto_URL} alt={item.Nama_Menu} />
                                             </div>
-                                            <span className="font-bold text-slate-800">{item.Nama_Menu}</span>
+                                            <div>
+                                                <div className="font-bold text-slate-800">{item.Nama_Menu}</div>
+                                                {item.Varian && <div className="text-[10px] text-blue-500 font-medium">Varian: {item.Varian.split('|').length} Grup</div>}
+                                            </div>
                                         </td>
-                                        <td className="p-4">Rp {parseInt(item.Harga).toLocaleString()}</td>
-                                        <td className="p-4 text-slate-500">Rp {parseInt(item.Modal).toLocaleString()}</td>
-                                        <td className="p-4 font-bold text-emerald-600">+Rp {(parseInt(item.Harga) - parseInt(item.Modal)).toLocaleString()}</td>
+                                        <td className="p-4 font-bold text-slate-700">Rp {parseInt(item.Harga).toLocaleString()}</td>
+                                        <td className="p-4 text-slate-500 text-xs">Rp {parseInt(item.Modal).toLocaleString()}</td>
                                         <td className="p-4"><span className={`px-2 py-1 rounded text-xs font-bold ${item.Stock < 5 ? 'bg-red-100 text-red-700' : 'bg-slate-100 text-slate-700'}`}>{item.Stock}</span></td>
                                         <td className="p-4">
                                             <div className="flex gap-2">
-                                                <button onClick={() => handleEdit(item)} className="p-2 hover:bg-slate-100 rounded-lg text-blue-600"><Icon name="pencil" size={16} /></button>
-                                                <button onClick={() => handleDelete(item)} className="p-2 hover:bg-red-50 rounded-lg text-red-600"><Icon name="trash-2" size={16} /></button>
+                                                <button onClick={() => handleEdit(item)} className="p-2 hover:bg-slate-100 rounded-lg text-blue-600" title="Edit"><Icon name="pencil" size={16} /></button>
+                                                <button onClick={() => handleDelete(item)} className="p-2 hover:bg-red-50 rounded-lg text-red-600" title="Hapus"><Icon name="trash-2" size={16} /></button>
                                             </div>
                                         </td>
                                     </tr>
@@ -139,21 +141,12 @@ const Inventory = ({ menu, refreshData }) => {
                 </div>
             </div>
 
-            <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title={editData ? "Edit Produk" : "Produk Baru"}>
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <div><label className="text-xs font-bold uppercase text-slate-500">Nama Produk</label><input required className="w-full border p-2.5 rounded-lg bg-white" value={form.Nama_Menu} onChange={e => setForm({ ...form, Nama_Menu: e.target.value })} /></div>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div><label className="text-xs font-bold uppercase text-emerald-700">Harga Jual</label><input type="number" required className="w-full border border-emerald-200 bg-emerald-50 p-2.5 rounded-lg" value={form.Harga} onChange={e => setForm({ ...form, Harga: e.target.value })} /></div>
-                        <div><label className="text-xs font-bold uppercase text-slate-500">Modal</label><input type="number" required className="w-full border p-2.5 rounded-lg bg-slate-50" value={form.Modal} onChange={e => setForm({ ...form, Modal: e.target.value })} /></div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div><label className="text-xs font-bold uppercase text-slate-500">Stok</label><input type="number" required className="w-full border p-2.5 rounded-lg bg-white" value={form.Stock} onChange={e => setForm({ ...form, Stock: e.target.value })} /></div>
-                        <div><label className="text-xs font-bold uppercase text-slate-500">Kategori</label><select className="w-full border p-2.5 rounded-lg bg-white" value={form.Kategori} onChange={e => setForm({ ...form, Kategori: e.target.value })}><option>Makanan</option><option>Minuman</option><option>Cemilan</option></select></div>
-                    </div>
-                    <div><label className="text-xs font-bold uppercase text-slate-500">Milik</label><select className="w-full border p-2.5 rounded-lg bg-white" value={form.Milik || 'Debby'} onChange={e => setForm({ ...form, Milik: e.target.value })}><option>Debby</option><option>Mama</option></select></div>
-                    <div><label className="text-xs font-bold uppercase text-slate-500">Foto URL</label><input className="w-full border p-2.5 rounded-lg bg-white" value={form.Foto_URL} onChange={e => setForm({ ...form, Foto_URL: e.target.value })} /></div>
-                    <button className="w-full bg-emerald-600 text-white py-3 rounded-lg font-bold shadow-lg hover:bg-emerald-700">Simpan Data</button>
-                </form>
+            <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title={editData ? "Edit Menu" : "Tambah Menu Baru"}>
+                <ProductForm
+                    initialData={editData}
+                    onSubmit={handleSubmit}
+                    loading={loading}
+                />
             </Modal>
         </div >
     );
