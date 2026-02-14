@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { fetchData } from '../services/api';
 import Icon from '../components/ui/Icon';
+import KitchenOrderCard from '../components/kitchen/KitchenOrderCard';
 
 const Kitchen = () => {
     const [orders, setOrders] = useState([]);
@@ -37,16 +38,7 @@ const Kitchen = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {orders.length === 0 && <div className="col-span-full flex flex-col items-center justify-center py-32 opacity-50 text-slate-400"><Icon name="coffee" size={64} className="mb-4" /><p>Semua pesanan selesai!</p></div>}
                 {orders.map(o => (
-                    <div key={o.ID_Order} className="bg-slate-800 rounded-xl overflow-hidden border border-slate-700 flex flex-col shadow-lg animate-in zoom-in-95 duration-300">
-                        <div className={`p-4 flex justify-between items-center ${o.Tipe_Order === 'Dine In' ? 'bg-emerald-900/30 text-emerald-400 border-b border-emerald-900/50' : 'bg-blue-900/30 text-blue-400 border-b border-blue-900/50'}`}>
-                            <div><div className="font-bold text-lg">#{o.ID_Order.slice(-4)}</div><div className="text-[10px] uppercase font-bold tracking-wider">{o.Tipe_Order}</div></div>
-                            <div className="font-mono text-lg font-bold">{o.Jam}</div>
-                        </div>
-                        <div className="p-4 flex-1 space-y-3">
-                            {o.items.map((i, idx) => (<div key={idx} className="flex gap-3 text-sm items-start"><span className="bg-slate-700 text-white w-6 h-6 flex items-center justify-center rounded font-bold shrink-0">{i.qty}</span> <span className="text-slate-300 pt-0.5 font-medium">{i.nama}</span></div>))}
-                        </div>
-                        <div className="p-3 bg-slate-900/30 border-t border-slate-700"><button onClick={() => done(o.ID_Order)} className="w-full py-2.5 bg-slate-700 hover:bg-emerald-600 hover:text-white rounded-lg font-bold text-sm transition-all text-slate-400 flex items-center justify-center gap-2 group"><Icon name="check" size={16} className="group-hover:scale-125 transition-transform" /> Selesai Masak</button></div>
-                    </div>
+                    <KitchenOrderCard key={o.ID_Order} order={o} onDone={done} />
                 ))}
             </div>
         </div>

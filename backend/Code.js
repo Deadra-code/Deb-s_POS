@@ -140,8 +140,8 @@ function saveProduct(data) {
 
   if (data.isNew) {
     const newID = "MN-" + new Date().getTime().toString().substr(-5);
-    // Urutan: ID(1), Nama(2), Kategori(3), Harga(4), Foto(5), Status(6), Stock(7), Milik(8), Modal(9)
-    sheet.appendRow([newID, data.Nama_Menu, data.Kategori, data.Harga, data.Foto_URL, data.Status, data.Stock, data.Milik, data.Modal]);
+    // Urutan: ID(1), Nama(2), Kategori(3), Harga(4), Foto(5), Status(6), Stock(7), Milik(8), Modal(9), Varian(10)
+    sheet.appendRow([newID, data.Nama_Menu, data.Kategori, data.Harga, data.Foto_URL, data.Status, data.Stock, data.Milik, data.Modal, data.Varian || ""]);
   } else {
     const r = data._rowIndex;
     if (r) {
