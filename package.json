@@ -9,7 +9,9 @@
     "lint": "eslint .",
     "test": "vitest",
     "test:e2e": "playwright test",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "clasp:login": "clasp login",
+    "deploy:backend": "clasp push"
   },
   "dependencies": {
     "lucide-react": "^0.561.0",
@@ -20,6 +22,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
+    "@google/clasp": "^3.2.0",
     "@playwright/test": "^1.58.2",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.9.1",
