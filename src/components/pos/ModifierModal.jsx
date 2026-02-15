@@ -51,68 +51,97 @@ const ModifierModal = ({ isOpen, onClose, item, activeAddons, setActiveAddons, o
 
     const isMissingRequired = variantGroups.some(g => !selectedVariants[g.name]);
 
+    // Clean up displayed names for add-ons to avoid repetition
+    const getCleanName = (name) => name.replace('Tambah ', '');
+
     return (
         <Modal
             isOpen={isOpen}
             onClose={onClose}
-            title="Pilihan & Tambahan"
+            title="Kustomisasi Pesanan"
             footer={
-                <button
-                    onClick={handleConfirm}
-                    disabled={isMissingRequired}
-                    className={`w-full py-4.5 rounded-2xl font-black shadow-xl shadow-emerald-500/10 transition-all active:scale-[0.98] h-14 ${isMissingRequired ? 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-600 cursor-not-allowed' : 'bg-emerald-600 dark:bg-emerald-500 text-white hover:bg-emerald-700 dark:hover:bg-emerald-600'}`}
-                >
-                    {isMissingRequired ? 'Pilih Varian Dahulu...' : (
-                        <span className="flex items-center justify-center gap-2">Tambahkan ke Keranjang <Icon name="plus" size={18} /></span>
-                    )}
-                </button>
+                <div className="p-1">
+                    <button
+                        onClick={handleConfirm}
+                        disabled={isMissingRequired}
+                        className={`w-full py-4 rounded-2xl font-bold text-lg shadow-xl shadow-emerald-500/10 transition-all active:scale-[0.98] h-14 flex items-center justify-center gap-2 ${isMissingRequired ? 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-600 cursor-not-allowed' : 'bg-emerald-600 dark:bg-emerald-500 text-white hover:bg-emerald-700 dark:hover:bg-emerald-600'}`}
+                    >
+                        {isMissingRequired ? 'Lengkapi Pilihan...' : (
+                            <>Tambahkan ke Keranjang <Icon name="shopping-bag" size={20} /></>
+                        )}
+                    </button>
+                </div>
             }
         >
-            <div className="space-y-8">
-                <div className="bg-slate-50 dark:bg-slate-800/50 p-5 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-inner">
-                    <div className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">Menu Terpilih</div>
-                    <div className="font-black text-slate-800 dark:text-slate-100 text-xl">{item?.Nama_Menu}</div>
+            <div className="space-y-6">
+                {/* Hero Product Card */}
+                <div className="bg-slate-50 dark:bg-slate-800/80 p-5 rounded-3xl border border-slate-100 dark:border-slate-800 relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                        <Icon name="tag" size={64} className="text-emerald-500 rotate-12" />
+                    </div>
+                    <div className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest mb-1">Menu Terpilih</div>
+                    <div className="font-black text-slate-800 dark:text-white text-2xl leading-tight w-[90%]">{item?.Nama_Menu}</div>
+                    <div className="mt-2 text-sm font-semibold text-slate-500 dark:text-slate-400">
+                        {parseInt(item?.Harga).toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })}
+                    </div>
                 </div>
 
                 {/* Dynamic Variants */}
                 {variantGroups.map(group => (
-                    <div key={group.name} className="space-y-4">
-                        <label className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                            {group.name} <span className="text-red-500 font-black">*</span>
+                    <div key={group.name} className="space-y-3">
+                        <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">
+                            {group.name} <span className="text-red-500 text-xs bg-red-50 dark:bg-red-900/20 px-1.5 py-0.5 rounded-md font-bold">Wajib</span>
                         </label>
                         <div className="grid grid-cols-2 gap-3">
                             {group.options.map(opt => (
                                 <button
                                     key={opt}
                                     onClick={() => setSelectedVariants(p => ({ ...p, [group.name]: opt }))}
-                                    className={`py-4 px-4 rounded-2xl border-2 font-black text-sm transition-all active:scale-90 ${selectedVariants[group.name] === opt ? 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-500 text-emerald-700 dark:text-emerald-400 shadow-lg shadow-emerald-500/10' : 'bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
+                                    className={`relative py-3 px-4 rounded-xl border-2 text-left transition-all duration-200 active:scale-[0.98] ${selectedVariants[group.name] === opt
+                                        ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-500 text-emerald-800 dark:text-emerald-400 shadow-md shadow-emerald-500/10'
+                                        : 'bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-700'}`}
                                 >
-                                    {opt}
+                                    <div className="font-bold text-sm">{opt}</div>
+                                    {selectedVariants[group.name] === opt && (
+                                        <div className="absolute top-2 right-2 text-emerald-500">
+                                            <Icon name="check-circle" size={16} fill="currentColor" className="text-emerald-500" />
+                                        </div>
+                                    )}
                                 </button>
                             ))}
                         </div>
                     </div>
                 ))}
 
-                {/* Hardcoded Add-ons */}
-                <div className="space-y-4">
-                    <label className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Tambahan (Add-ons)</label>
-                    <div className="space-y-3">
+                {/* Add-ons */}
+                <div className="space-y-3">
+                    <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest px-1">Ekstra Tambahan</label>
+                    <div className="space-y-2">
                         {HARDCODED_ADDONS.map(m => {
                             const active = activeAddons.find(x => x.id === m.id);
                             return (
                                 <button
                                     key={m.id}
                                     onClick={() => setActiveAddons(p => active ? p.filter(x => x.id !== m.id) : [...p, m])}
-                                    className={`w-full flex justify-between items-center p-4.5 rounded-2xl border-2 transition-all active:scale-[0.98] ${active ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-500 text-blue-700 dark:text-blue-400 shadow-lg shadow-blue-500/10' : 'bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
+                                    className={`w-full flex justify-between items-center p-3 rounded-xl border transition-all duration-200 active:scale-[0.99] group ${active
+                                        ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-500/50 shadow-md shadow-blue-500/5'
+                                        : 'bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50'}`}
                                 >
-                                    <span className="font-black text-sm flex items-center gap-2">
-                                        <div className={`w-5 h-5 rounded-md border flex items-center justify-center transition-colors ${active ? 'bg-blue-500 border-blue-500 text-white' : 'border-slate-200 dark:border-slate-700'}`}>
-                                            {active && <Icon name="check" size={12} />}
+                                    <div className="flex items-center gap-3">
+                                        <div className={`w-5 h-5 rounded-md border flex items-center justify-center transition-colors duration-200 ${active
+                                            ? 'bg-blue-500 border-blue-500 text-white'
+                                            : 'border-slate-300 dark:border-slate-600 group-hover:border-slate-400 bg-white dark:bg-slate-800'}`}>
+                                            {active && <Icon name="check" size={12} strokeWidth={4} />}
                                         </div>
-                                        {m.name}
+                                        <span className={`font-bold text-sm ${active ? 'text-blue-700 dark:text-blue-300' : 'text-slate-700 dark:text-slate-300'}`}>
+                                            {getCleanName(m.name)}
+                                        </span>
+                                    </div>
+                                    <span className={`text-xs font-bold px-2 py-1 rounded-md ${active
+                                        ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300'
+                                        : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-500'}`}>
+                                        +{parseInt(m.price).toLocaleString('id-ID')}
                                     </span>
-                                    <span className={`text-xs font-black p-1.5 rounded-lg ${active ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500'}`}>+ Rp {m.price.toLocaleString()}</span>
                                 </button>
                             );
                         })}
