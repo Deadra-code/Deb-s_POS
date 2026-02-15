@@ -4,8 +4,8 @@ import haptics from '../../services/haptics';
 const ProductCard = ({ item, onClick, rank }) => {
     return (
         <motion.article
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
             role="button"
             tabIndex="0"
             aria-label={`Tambah ${item.Nama_Menu} ke keranjang`}
@@ -17,38 +17,25 @@ const ProductCard = ({ item, onClick, rank }) => {
                 }
             }}
             onClick={() => { haptics.tap(); onClick(item); }}
-            className="bg-white dark:bg-neutral-card rounded-2xl overflow-hidden shadow-sm border border-slate-100 dark:border-primary/5 active:scale-95 transition-all cursor-pointer hover:shadow-lg relative group"
+            className="bg-white dark:bg-slate-900 p-3 md:p-4 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col gap-3 group active:scale-95 transition-all cursor-pointer hover:shadow-xl hover:border-emerald-200 dark:hover:border-emerald-800/50 overflow-hidden"
         >
             {rank && (
-                <div className={`absolute top-2 left-2 w-7 h-7 rounded-full flex items-center justify-center font-bold text-[10px] shadow-lg z-20 
-                    ${rank === 1 ? 'bg-gradient-to-br from-yellow-300 to-yellow-600 text-white ring-2 ring-yellow-100 dark:ring-yellow-900/40' :
+                <div className={`absolute -top-2 -left-2 w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs shadow-md z-10 
+                    ${rank === 1 ? 'bg-gradient-to-br from-yellow-300 to-yellow-600 text-white ring-2 ring-yellow-100 dark:ring-yellow-900/40 scale-110' :
                         rank === 2 ? 'bg-gradient-to-br from-slate-200 to-slate-400 text-white' :
                             rank === 3 ? 'bg-gradient-to-br from-orange-300 to-orange-500 text-white' :
                                 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'}`}>
                     #{rank}
                 </div>
             )}
-
-            <div className="relative aspect-square bg-slate-100 dark:bg-neutral-dark overflow-hidden">
-                <img
-                    alt={item.Nama_Menu}
-                    className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-500"
-                    src={item.Gambar || `https://ui-avatars.com/api/?name=${encodeURIComponent(item.Nama_Menu)}&background=102218&color=13ec6d`}
-                />
-                <div className="absolute top-2 right-2">
-                    {item.Stock <= 0 ? (
-                        <span className="bg-slate-800/80 backdrop-blur-md text-white text-[9px] font-black px-2 py-1 rounded-lg uppercase tracking-wider">Habis</span>
-                    ) : item.Stock < 10 ? (
-                        <span className="bg-orange-500 text-white text-[9px] font-black px-2 py-1 rounded-lg">STOK: {item.Stock}</span>
-                    ) : (
-                        <span className="bg-primary/90 text-background-dark text-[9px] font-black px-2 py-1 rounded-lg">STOK: {item.Stock}</span>
-                    )}
-                </div>
+            <div>
+                <div className="font-bold text-slate-800 dark:text-slate-100 text-sm leading-tight mb-2 line-clamp-2">{item.Nama_Menu}</div>
+                <div className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">{item.Kategori}</div>
             </div>
-
-            <div className="p-3">
-                <h3 className="font-bold text-slate-800 dark:text-slate-100 text-[13px] leading-snug line-clamp-2 h-9 mb-1">{item.Nama_Menu}</h3>
-                <p className="text-primary font-black text-sm">Rp {parseInt(item.Harga).toLocaleString()}</p>
+            <div className="flex justify-between items-center mt-3">
+                <span className="font-bold text-emerald-600 dark:text-emerald-400 text-base">Rp {parseInt(item.Harga).toLocaleString()}</span>
+                {item.Stock < 5 && item.Stock > 0 && <span className="text-[10px] text-red-500 font-bold bg-red-50 dark:bg-red-900/20 px-2 py-0.5 rounded-full">Sisa {item.Stock}</span>}
+                {item.Stock <= 0 && <span className="text-[10px] text-slate-400 font-bold bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full">HABIS</span>}
             </div>
         </motion.article>
     );

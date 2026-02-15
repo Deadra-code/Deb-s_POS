@@ -3,7 +3,9 @@
 @tailwind utilities;
 
 @layer base {
-  html, body {
+
+  html,
+  body {
     @apply h-full overflow-hidden;
     /* Prevent browser pull-to-refresh on mobile */
     overscroll-behavior-y: contain;
@@ -18,13 +20,30 @@
     width: 6px;
     height: 6px;
   }
+
   ::-webkit-scrollbar-track {
     @apply bg-transparent;
   }
+
   ::-webkit-scrollbar-thumb {
     @apply bg-slate-300 dark:bg-slate-700 rounded-full;
   }
+
   ::-webkit-scrollbar-thumb:hover {
     @apply bg-slate-400 dark:bg-slate-600;
+  }
+
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .glass-nav {
+    @apply bg-background-dark/80 backdrop-blur-md;
+    border-top: 1px solid rgba(19, 236, 109, 0.1);
   }
 }

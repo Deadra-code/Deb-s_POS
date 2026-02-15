@@ -4,7 +4,7 @@ import { createContext, useContext, useEffect, useState } from 'react';
 const ThemeContext = createContext();
 
 export const ThemeProvider = ({ children }) => {
-    const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
+    const [theme, setTheme] = useState(localStorage.getItem('theme_v2') || 'dark');
 
     useEffect(() => {
         const root = window.document.documentElement;
@@ -13,7 +13,7 @@ export const ThemeProvider = ({ children }) => {
         } else {
             root.classList.remove('dark');
         }
-        localStorage.setItem('theme', theme);
+        localStorage.setItem('theme_v2', theme);
     }, [theme]);
 
     const toggleTheme = () => setTheme(prev => prev === 'light' ? 'dark' : 'light');

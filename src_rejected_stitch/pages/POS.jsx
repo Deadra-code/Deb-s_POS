@@ -158,29 +158,38 @@ const POS = ({ menu, refreshData, loading: menuLoading }) => {
             {toast && <Toast msg={toast.msg} type={toast.type} onClose={() => setToast(null)} />}
 
             {/* Left Content (Menu Grid) */}
-            <main className="flex-1 overflow-y-auto p-4 md:p-8 custom-scroll">
-                <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-                    <div className="relative w-full md:w-96 group">
-                        <Icon name="search" className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-500 transition-colors" size={18} />
+            <main className="flex-1 overflow-y-auto px-4 pb-40 md:p-8 custom-scroll relative">
+                <header className="sticky top-0 z-30 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md pt-4 pb-4 mb-4">
+                    <div className="flex items-center justify-between mb-4 md:hidden">
+                        <h1 className="text-2xl font-bold tracking-tight">Kasir</h1>
+                        <div className="flex gap-3">
+                            <button onClick={refreshData} className="w-10 h-10 flex items-center justify-center rounded-full bg-primary/10 text-primary" aria-label="Refresh Menu">
+                                <Icon name="rotate-cw" size={20} />
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="relative w-full md:w-96 group mb-4">
+                        <Icon name="search" className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" size={18} />
                         <input
-                            className="w-full bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 p-4 pl-12 rounded-3xl shadow-sm outline-none focus:ring-2 focus:ring-emerald-500/20 text-slate-800 dark:text-slate-100 transition-all placeholder:text-slate-400 overflow-hidden"
-                            placeholder="Cari menu apa hari ini?..."
+                            className="w-full bg-slate-100 dark:bg-neutral-dark border-none p-3.5 pl-12 rounded-2xl shadow-sm outline-none focus:ring-2 focus:ring-primary/50 text-slate-800 dark:text-slate-100 transition-all placeholder:text-slate-400 overflow-hidden"
+                            placeholder="Search products or SKU..."
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                         />
-                        {search && <button onClick={() => setSearch('')} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1" aria-label="Bersihkan pencarian">
+                        {search && <button onClick={() => setSearch('')} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1">
                             <Icon name="x-circle" size={20} />
                         </button>}
                     </div>
 
-                    <nav className="flex bg-white dark:bg-slate-900 p-1.5 rounded-2xl shadow-sm border border-slate-50 dark:border-slate-800 overflow-x-auto no-scrollbar w-full md:w-auto" aria-label="Kategori Menu">
+                    <nav className="flex gap-2 overflow-x-auto hide-scrollbar pb-1" aria-label="Kategori Menu">
                         {categories.map(c => (
                             <button
                                 key={c}
                                 onClick={() => { haptics.tick(); setCat(c); }}
-                                className={`px-6 py-2.5 rounded-xl text-sm font-bold whitespace-nowrap transition-all duration-300 ${cat === c ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-500/30' : 'text-slate-500 dark:text-slate-400 hover:text-emerald-500 dark:hover:text-emerald-400'}`}
+                                className={`whitespace-nowrap px-6 py-2 rounded-full text-xs font-bold transition-all ${cat === c ? 'bg-primary text-background-dark shadow-lg shadow-primary/20' : 'bg-slate-100 dark:bg-neutral-dark text-slate-500 dark:text-slate-400 hover:bg-primary/20 hover:text-primary'}`}
                             >
-                                {c === 'All' ? 'Semua' : c}
+                                {c === 'All' ? 'All Items' : c}
                             </button>
                         ))}
                     </nav>
@@ -283,12 +292,23 @@ const POS = ({ menu, refreshData, loading: menuLoading }) => {
                 </div>
             </aside>
 
-            {/* Mobile Cart Button */}
-            {cart.length > 0 && (
-                <div className="md:hidden fixed bottom-20 left-4 right-4 z-50 animate-in slide-in-from-bottom">
-                    <button onClick={() => setCartOpen(true)} className="w-full bg-emerald-600 text-white py-3 rounded-xl shadow-xl font-bold flex justify-between px-6 items-center active:scale-95 transition-transform">
-                        <div className="flex items-center gap-2"><span className="bg-white/20 px-2 py-0.5 rounded text-xs">{cart.length} Item</span></div>
-                        <span data-testid="cart-total">{formatCurrency(total)}</span>
+            {/* Persistent Mobile Cart Bar (Stitch Style) */}
+            {cart.length > 0 && !cartOpen && !checkoutOpen && (
+                <div className="md:hidden fixed bottom-[84px] left-0 right-0 z-50 px-4 animate-in slide-in-from-bottom duration-300">
+                    <button
+                        onClick={() => setCartOpen(true)}
+                        className="w-full bg-primary text-background-dark rounded-2xl py-4 px-5 flex items-center justify-between shadow-2xl shadow-primary/30 active:scale-[0.98] transition-all"
+                    >
+                        <div className="flex flex-col items-start">
+                            <span className="text-[10px] uppercase tracking-wider font-black opacity-70 leading-none mb-1">{cart.reduce((a, b) => a + b.qty, 0)} ITEMS SELECTED</span>
+                            <span className="text-xl font-black leading-none">{formatCurrency(total)}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <span className="text-xs font-black uppercase tracking-tight">Review Cart</span>
+                            <div className="bg-background-dark text-primary w-8 h-8 rounded-full flex items-center justify-center">
+                                <Icon name="arrow-right" size={18} />
+                            </div>
+                        </div>
                     </button>
                 </div>
             )}
