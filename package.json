@@ -18,8 +18,10 @@
     "audit:ui": "node scripts/audit-ui.cjs",
     "audit:comp": "node scripts/audit-components.cjs",
     "audit:smart": "node scripts/audit-smart.cjs",
+    "audit:sec": "node scripts/audit-security.cjs",
+    "audit:perf": "node scripts/audit-perf.cjs",
     "deploy:smart": "node scripts/deploy-smart.cjs",
-    "audit": "npm run audit:smart && npm run audit:mod && npm run audit:comp && npm run audit:ui && npm run audit:deps"
+    "audit": "npm run audit:smart && npm run audit:sec && npm run audit:perf && npm run audit:mod && npm run audit:comp && npm run audit:ui && npm run audit:deps"
   },
   "dependencies": {
     "framer-motion": "^12.34.0",
