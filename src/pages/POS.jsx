@@ -15,6 +15,7 @@ import { AnimatePresence } from 'framer-motion';
 import haptics from '../services/haptics';
 import PullToRefresh from '../components/ui/PullToRefresh';
 import { OWNERS, DEFAULT_OWNER } from '../config/owners';
+import { formatCurrency } from '../utils/format';
 
 const POS = ({ menu, refreshData, loading: menuLoading }) => {
     const [cart, setCart] = useState([]);
@@ -268,7 +269,7 @@ const POS = ({ menu, refreshData, loading: menuLoading }) => {
                 <div className="p-6 bg-slate-50 dark:bg-slate-900/50 border-t dark:border-slate-800 space-y-4">
                     <div className="flex justify-between font-bold text-xl pt-2">
                         <span className="text-slate-500 dark:text-slate-400 text-sm font-medium self-end pb-1">Total Pembayaran</span>
-                        <span className="text-emerald-600 dark:text-emerald-400 font-black" data-testid="cart-total">Rp {total.toLocaleString()}</span>
+                        <span className="text-emerald-600 dark:text-emerald-400 font-black" data-testid="cart-total">{formatCurrency(total)}</span>
                     </div>
                     <button
                         onClick={() => setCheckoutOpen(true)}
@@ -285,7 +286,7 @@ const POS = ({ menu, refreshData, loading: menuLoading }) => {
                 <div className="md:hidden fixed bottom-20 left-4 right-4 z-50 animate-in slide-in-from-bottom">
                     <button onClick={() => setCartOpen(true)} className="w-full bg-emerald-600 text-white py-3 rounded-xl shadow-xl font-bold flex justify-between px-6 items-center active:scale-95 transition-transform">
                         <div className="flex items-center gap-2"><span className="bg-white/20 px-2 py-0.5 rounded text-xs">{cart.length} Item</span></div>
-                        <span data-testid="cart-total">Rp {total.toLocaleString()}</span>
+                        <span data-testid="cart-total">{formatCurrency(total)}</span>
                     </button>
                 </div>
             )}

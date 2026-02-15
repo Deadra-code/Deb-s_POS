@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import Modal from '../ui/Modal';
 import Icon from '../ui/Icon';
+import { formatCurrency } from '../../utils/format';
 
 const HARDCODED_ADDONS = [
     { id: 'm1', name: 'Tambah Telur Dadar', price: 5000 },
@@ -82,7 +83,7 @@ const ModifierModal = ({ isOpen, onClose, item, activeAddons, setActiveAddons, o
                     <div className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest mb-1">Menu Terpilih</div>
                     <div className="font-black text-slate-800 dark:text-white text-2xl leading-tight w-[90%]">{item?.Nama_Menu}</div>
                     <div className="mt-2 text-sm font-semibold text-slate-500 dark:text-slate-400">
-                        {parseInt(item?.Harga).toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })}
+                        {formatCurrency(item?.Harga)}
                     </div>
                 </div>
 
@@ -140,7 +141,7 @@ const ModifierModal = ({ isOpen, onClose, item, activeAddons, setActiveAddons, o
                                     <span className={`text-xs font-bold px-2 py-1 rounded-md ${active
                                         ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300'
                                         : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-500'}`}>
-                                        +{parseInt(m.price).toLocaleString('id-ID')}
+                                        +{formatCurrency(m.price)}
                                     </span>
                                 </button>
                             );
