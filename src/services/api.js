@@ -21,6 +21,7 @@ export const fetchData = async (action, method = 'GET', body = null) => {
 
         return fetch(url, {
             method: "POST",
+            headers: { 'Content-Type': 'text/plain' },
             body: JSON.stringify(body)
         }).then(res => res.json())
             .catch(err => {
@@ -54,6 +55,7 @@ export const syncOfflineOrders = async () => {
             try {
                 const res = await fetch(`${API_URL}?action=saveOrder`, {
                     method: "POST",
+                    headers: { 'Content-Type': 'text/plain' },
                     body: JSON.stringify(order.body)
                 });
 
