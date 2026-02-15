@@ -211,7 +211,9 @@ const Analytics = ({ loading: parentLoading }) => {
                 </div>
             </div>
 
-            <RevenueChart data={stats.chartData} />
+            <div className="h-64 w-full">
+                <RevenueChart data={stats.chartData} />
+            </div>
 
             {/* --- SETORAN REPORT SECTION --- */}
             {period === 'HARI_INI' && <div className="space-y-6"><SetoranReport stats={stats} /></div>}
