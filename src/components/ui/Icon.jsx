@@ -23,4 +23,6 @@ const Icon = memo(({ name, size = 20, className = "" }) => {
     return <LucideIcon size={size} className={className} />;
 });
 
+Icon.displayName = 'Icon';
+
 export default Icon;

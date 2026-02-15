@@ -21,7 +21,12 @@ const PullToRefresh = ({ onRefresh, isRefreshing }) => {
 
     useEffect(() => {
         if (!isRefreshing) {
-            setHasTriggered(false);
+            queueMicrotask(() => {
+                setHasTriggered(prev => {
+                    if (prev === false) return prev;
+                    return false;
+                });
+            });
             y.set(0);
         }
     }, [isRefreshing, y]);

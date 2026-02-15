@@ -14,40 +14,38 @@ describe('LoginPage', () => {
         vi.clearAllMocks();
     });
 
-    const fillForm = (u = 'testuser', p = 'pass123') => {
-        fireEvent.change(screen.getByPlaceholderText(/admin/i), { target: { value: u } });
-        fireEvent.change(screen.getByPlaceholderText(/••••••••/i), { target: { value: p } });
+    const fillForm = (p = '123456') => {
+        fireEvent.change(screen.getByPlaceholderText(/••••••/i), { target: { value: p } });
     };
 
     it('renders login form', () => {
         render(<LoginPage onLogin={mockOnLogin} />);
-        expect(screen.getByPlaceholderText(/admin/i)).toBeInTheDocument();
-        expect(screen.getByPlaceholderText(/••••••••/i)).toBeInTheDocument();
-        expect(screen.getByText(/Masuk Aplikasi/i)).toBeInTheDocument();
+        expect(screen.getByPlaceholderText(/••••••/i)).toBeInTheDocument();
+        expect(screen.getByText(/Masuk Sekarang/i)).toBeInTheDocument();
     });
 
     it('calls onLogin with token on successful login', async () => {
         fetchData.mockResolvedValue({ success: true, token: 'fake-token' });
 
         render(<LoginPage onLogin={mockOnLogin} />);
-        fillForm();
-        fireEvent.click(screen.getByText(/Masuk Aplikasi/i));
+        fillForm('123456');
+        fireEvent.click(screen.getByText(/Masuk Sekarang/i));
 
         await waitFor(() => {
-            expect(fetchData).toHaveBeenCalledWith('login', 'POST', { username: 'testuser', password: 'pass123' });
+            expect(fetchData).toHaveBeenCalledWith('login', 'POST', { passcode: '123456' });
             expect(mockOnLogin).toHaveBeenCalledWith('fake-token');
         });
     });
 
     it('shows error message on failed login', async () => {
-        fetchData.mockResolvedValue({ success: false, error: 'Invalid creds' });
+        fetchData.mockResolvedValue({ success: false, error: 'Passcode salah' });
 
         render(<LoginPage onLogin={mockOnLogin} />);
-        fillForm();
-        fireEvent.click(screen.getByText(/Masuk Aplikasi/i));
+        fillForm('wrong');
+        fireEvent.click(screen.getByText(/Masuk Sekarang/i));
 
         await waitFor(() => {
-            expect(screen.getByText(/Invalid creds/i)).toBeInTheDocument();
+            expect(screen.getByText(/Passcode salah/i)).toBeInTheDocument();
         });
     });
 
@@ -55,8 +53,8 @@ describe('LoginPage', () => {
         fetchData.mockRejectedValue(new Error('Network Err'));
 
         render(<LoginPage onLogin={mockOnLogin} />);
-        fillForm();
-        fireEvent.click(screen.getByText(/Masuk Aplikasi/i));
+        fillForm('123456');
+        fireEvent.click(screen.getByText(/Masuk Sekarang/i));
 
         await waitFor(() => {
             expect(screen.getByText(/Gagal menghubungi server/i)).toBeInTheDocument();

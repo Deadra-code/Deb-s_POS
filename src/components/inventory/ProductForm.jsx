@@ -18,25 +18,30 @@ const ProductForm = ({ initialData, onSubmit, loading }) => {
 
     useEffect(() => {
         if (initialData) {
-            setFormData(initialData);
-            // Parse Varian string: "Group: Op1, Op2 | Group2: OpA, OpB"
-            if (initialData.Varian) {
-                const rawGroups = initialData.Varian.split('|');
-                const groups = rawGroups.map(g => {
-                    const [name, opts] = g.split(':');
-                    const rawOptions = opts ? opts.split(',') : [];
-                    const options = rawOptions.map(o => o.trim());
-
-                    return {
-                        name: name.trim(),
-                        options: options,
-                        optionsDisplay: opts ? opts.trim() : ''
-                    };
+            queueMicrotask(() => {
+                setFormData(prev => {
+                    if (JSON.stringify(prev) === JSON.stringify(initialData)) return prev;
+                    return initialData;
                 });
-                setVariantGroups(groups);
-            } else {
-                setVariantGroups([]);
-            }
+
+                if (initialData.Varian) {
+                    const rawGroups = initialData.Varian.split('|');
+                    const groups = rawGroups.map(g => {
+                        const [name, opts] = g.split(':');
+                        const rawOptions = opts ? opts.split(',') : [];
+                        const options = rawOptions.map(o => o.trim());
+
+                        return {
+                            name: name.trim(),
+                            options: options,
+                            optionsDisplay: opts ? opts.trim() : ''
+                        };
+                    });
+                    setVariantGroups(groups);
+                } else {
+                    setVariantGroups([]);
+                }
+            });
         }
     }, [initialData]);
 

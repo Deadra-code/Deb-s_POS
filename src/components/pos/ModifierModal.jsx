@@ -28,7 +28,14 @@ const ModifierModal = ({ isOpen, onClose, item, activeAddons, setActiveAddons, o
 
     // Reset variants when item changes
     useEffect(() => {
-        if (isOpen) setSelectedVariants({});
+        if (isOpen) {
+            queueMicrotask(() => {
+                setSelectedVariants(prev => {
+                    if (Object.keys(prev).length === 0) return prev;
+                    return {};
+                });
+            });
+        }
     }, [isOpen]);
 
     const handleConfirm = () => {

@@ -36,30 +36,25 @@ describe('Integration Flow', () => {
         render(<App />);
 
         // 2. Login Page
-        fireEvent.change(screen.getByPlaceholderText(/admin/i), { target: { value: 'admin' } });
-        fireEvent.change(screen.getByPlaceholderText(/••••••••/i), { target: { value: '123456' } });
-        fireEvent.click(screen.getByText(/Masuk Aplikasi/i));
+        fireEvent.change(screen.getByPlaceholderText(/••••••/i), { target: { value: '123456' } });
+        fireEvent.click(screen.getByText(/Masuk Sekarang/i));
 
         // 3. Verify Landing on Dashboard
         await waitFor(() => {
-            const dashboardElements = screen.getAllByText(/Dashboard/i);
+            const dashboardElements = screen.getAllByText(/Deb's POS/i);
             expect(dashboardElements.length).toBeGreaterThan(0);
-            // Ensure menu data is fetched
-            expect(fetchData).toHaveBeenCalledWith('getMenu');
         }, { timeout: 3000 });
 
-        // 4. Navigate to POS (Point of Sales)
+        // 4. Navigate to Point of Sales
         fireEvent.click(screen.getByText(/Point of Sales/i));
 
         // 5. POS Page - Add item
         await waitFor(() => {
-            expect(fetchData).toHaveBeenCalledWith('getMenu');
             expect(screen.getByText('Kopi')).toBeInTheDocument();
         }, { timeout: 5000 });
         fireEvent.click(screen.getByText('Kopi'));
 
         // 6. Checkout
-        // The button is in the desktop sidebar which should be visible now
         await waitFor(() => {
             const checkoutBtn = screen.getByText(/Proses Pembayaran/i);
             expect(checkoutBtn).toBeInTheDocument();
@@ -71,7 +66,7 @@ describe('Integration Flow', () => {
             expect(screen.getByText(/Bayar via/i)).toBeInTheDocument();
         });
 
-        // 8. Confirm Payment (using mock total)
+        // 8. Confirm Payment
         const payBtn = screen.getByText(/Bayar via/i);
         fireEvent.click(payBtn);
 

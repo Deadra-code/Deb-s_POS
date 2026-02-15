@@ -11,11 +11,10 @@ const OrderHistory = () => {
     const [filterDate, setFilterDate] = useState(new Date().toISOString().slice(0, 10));
 
     useEffect(() => {
-        setLoading(true);
         fetchData('getReport').then(res => {
             setTransactions(res.transactions || []);
             setLoading(false);
-        }).catch(e => setLoading(false));
+        }).catch(() => setLoading(false));
     }, []);
 
     const stats = useMemo(() => {
@@ -57,7 +56,7 @@ const OrderHistory = () => {
                 fetchData('getReport').then(res => {
                     setTransactions(res.transactions || []);
                     setLoading(false);
-                }).catch(e => setLoading(false));
+                }).catch(() => setLoading(false));
             }} isRefreshing={loading} />
             <div className="flex justify-between items-center mb-8">
                 <div>

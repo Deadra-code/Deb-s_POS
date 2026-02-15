@@ -49,7 +49,7 @@ const Inventory = ({ menu, refreshData }) => {
             const payload = { rowIndex: item._rowIndex };
             fetchData('deleteProduct', 'POST', payload)
                 .then(() => { haptics.success(); setLoading(false); refreshData(); })
-                .catch(err => {
+                .catch(() => {
                     haptics.error();
                     setLoading(false);
                     alert("Gagal menghapus");

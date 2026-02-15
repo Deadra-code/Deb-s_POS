@@ -17,7 +17,7 @@ const Analytics = () => {
     useEffect(() => {
         fetchData('getReport').then(res => {
             setData(res); setLoading(false);
-        }).catch(e => setLoading(false));
+        }).catch(() => setLoading(false));
     }, []);
 
     const stats = useMemo(() => {
@@ -120,7 +120,7 @@ const Analytics = () => {
                 setLoading(true);
                 fetchData('getReport').then(res => {
                     setData(res); setLoading(false);
-                }).catch(e => setLoading(false));
+                }).catch(() => setLoading(false));
             }} isRefreshing={loading} />
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
                 <div>

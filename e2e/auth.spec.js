@@ -4,11 +4,10 @@ test.describe('Authentication Flow', () => {
     test.beforeEach(async ({ page }) => {
         // Mock the GAS API
         await page.route('**/macros/s/**', async route => {
-            const url = route.request().url();
             const postData = route.request().postData() || '';
 
             if (postData.includes('action=login')) {
-                if (postData.includes('admin') && postData.includes('admin')) {
+                if (postData.includes('passcode') && postData.includes('123456')) {
                     await route.fulfill({
                         status: 200,
                         contentType: 'application/json',
@@ -18,7 +17,7 @@ test.describe('Authentication Flow', () => {
                     await route.fulfill({
                         status: 200,
                         contentType: 'application/json',
-                        body: JSON.stringify({ success: false, error: 'Username atau Password salah' })
+                        body: JSON.stringify({ success: false, error: 'Passcode salah' })
                     });
                 }
             } else if (postData.includes('action=getReport')) {
@@ -33,24 +32,20 @@ test.describe('Authentication Flow', () => {
         });
     });
 
-    test('should login successfully with admin credentials', async ({ page }) => {
+    test('should login successfully with valid passcode', async ({ page }) => {
         await page.goto('./');
-        await page.getByPlaceholder('Username').fill('admin');
-        await page.getByPlaceholder('Password').fill('admin');
+        await page.getByPlaceholder('••••••').fill('123456');
         // Click login
-        await page.getByText('Masuk Aplikasi').click();
+        await page.getByText('Masuk Sekarang').click();
 
         // Verify navigation to dashboard - wait for app title
-        await expect(page.locator('text=Deb\'s Manager')).toBeVisible({ timeout: 15000 });
-        // Look for the "Analisa performa bisnis" which is unique to dashboard
-        await expect(page.locator('text=Analisa performa bisnis')).toBeVisible({ timeout: 10000 });
+        await expect(page.locator('text=Deb\'s POS')).toBeVisible({ timeout: 15000 });
     });
 
-    test('should show error on invalid credentials', async ({ page }) => {
-        await page.goto('./');
-        await page.getByPlaceholder('Username').fill('wrong');
-        await page.getByPlaceholder('Password').fill('wrong');
-        await page.getByText('Masuk Aplikasi').click();
-        await expect(page.locator('text=Username atau Password salah')).toBeVisible();
+    test('should show error on invalid passcode', async ({ page }) => {
+        await page.goto('/');
+        await page.getByPlaceholder('••••••').fill('wrong');
+        await page.getByText('Masuk Sekarang').click();
+        await expect(page.locator('text=Passcode salah')).toBeVisible();
     });
 });

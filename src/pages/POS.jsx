@@ -10,7 +10,8 @@ import CartItem from '../components/pos/CartItem';
 import ModifierModal from '../components/pos/ModifierModal';
 import CustomItemModal from '../components/pos/CustomItemModal';
 import CheckoutModal from '../components/pos/CheckoutModal';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 import haptics from '../services/haptics';
 import PullToRefresh from '../components/ui/PullToRefresh';
 

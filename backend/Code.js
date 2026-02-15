@@ -1,6 +1,7 @@
 // =========================================================
 // DEB'S POS PRO - SECURE BACKEND API (v3.0 Dynamic Auth)
 // =========================================================
+
 // 1. HTTP HANDLERS
 function doGet(e) {
   return handleRequest(e);
@@ -307,7 +308,10 @@ function getSalesReport() {
         let itemCost = costMap[i.nama] || 0;
         totalCost += (itemCost * i.qty);
       });
-    } catch (e) { }
+    } catch (e) {
+      console.error("Error getting usage logs:", e);
+      return [];
+    }
 
     return {
       date: row[idx.tgl],
@@ -374,7 +378,9 @@ function getTopItems() {
         items.forEach(i => {
           counts[i.nama] = (counts[i.nama] || 0) + i.qty;
         });
-      } catch (e) { }
+      } catch (e) {
+        console.error("Error logging record:", e);
+      }
     }
   });
 

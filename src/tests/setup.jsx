@@ -20,9 +20,13 @@ vi.mock('framer-motion', () => {
         }, {});
     };
 
-    const mockComponent = (Component) => ({ children, ...props }) => (
-        <Component {...filterProps(props)}>{children}</Component>
-    );
+    const mockComponent = (Tag) => {
+        const Mock = ({ children, ...props }) => (
+            <Tag {...filterProps(props)}>{children}</Tag>
+        );
+        Mock.displayName = `Mock${Tag}`;
+        return Mock;
+    };
 
     return {
         motion: {

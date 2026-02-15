@@ -1,4 +1,4 @@
-import { useRef, useState, useMemo } from 'react';
+import { useMemo } from 'react';
 import { motion, useAnimation, useMotionValue, useTransform } from 'framer-motion';
 import Icon from '../ui/Icon';
 import haptics from '../../services/haptics';
@@ -12,7 +12,6 @@ const CartItem = ({ item, onUpdateQty }) => {
     const x = useMotionValue(0);
     const controls = useAnimation();
     const bgOpacity = useTransform(x, [-100, 0], [1, 0]);
-    const [isDragging, setIsDragging] = useState(false);
 
     const itemTotal = useMemo(() => item.Harga * item.qty, [item.Harga, item.qty]);
     const formattedPrice = useMemo(() => `Rp ${parseInt(item.Harga).toLocaleString()}`, [item.Harga]);
@@ -22,7 +21,6 @@ const CartItem = ({ item, onUpdateQty }) => {
     };
 
     const handleDragEnd = async (event, info) => {
-        setIsDragging(false);
         if (info.offset.x < -80) {
             // Swiped Left - Delete
             haptics.error();
@@ -49,7 +47,6 @@ const CartItem = ({ item, onUpdateQty }) => {
                 drag="x"
                 dragConstraints={{ left: 0, right: 0 }}
                 dragElastic={0.1}
-                onDragStart={() => setIsDragging(true)}
                 onDragEnd={handleDragEnd}
                 animate={controls}
                 style={{ x, touchAction: "none" }}
