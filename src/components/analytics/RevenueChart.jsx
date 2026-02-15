@@ -2,8 +2,8 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 
 const RevenueChart = ({ data }) => {
     return (
-        <div className="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-            <h3 className="font-bold text-slate-700 mb-6">Tren Penjualan & Profit</h3>
+        <div className="lg:col-span-2 bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 transition-colors">
+            <h3 className="font-bold text-slate-700 dark:text-slate-200 mb-6">Tren Penjualan & Profit</h3>
             <div className="h-72 w-full">
                 <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={data}>

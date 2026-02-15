@@ -36,8 +36,12 @@ describe('api service', () => {
     });
 
     it('should handle fetch errors', async () => {
+        const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
         fetch.mockRejectedValueOnce(new Error('Network failure'));
 
         await expect(fetchData('getMenu')).rejects.toThrow('Network failure');
+
+        expect(consoleSpy).toHaveBeenCalled();
+        consoleSpy.mockRestore();
     });
 });

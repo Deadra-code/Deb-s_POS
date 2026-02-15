@@ -15,14 +15,14 @@ describe('LoginPage', () => {
     });
 
     const fillForm = (u = 'testuser', p = 'pass123') => {
-        fireEvent.change(screen.getByPlaceholderText(/Username/i), { target: { value: u } });
-        fireEvent.change(screen.getByPlaceholderText(/Password/i), { target: { value: p } });
+        fireEvent.change(screen.getByPlaceholderText(/admin/i), { target: { value: u } });
+        fireEvent.change(screen.getByPlaceholderText(/••••••••/i), { target: { value: p } });
     };
 
     it('renders login form', () => {
         render(<LoginPage onLogin={mockOnLogin} />);
-        expect(screen.getByPlaceholderText(/Username/i)).toBeInTheDocument();
-        expect(screen.getByPlaceholderText(/Password/i)).toBeInTheDocument();
+        expect(screen.getByPlaceholderText(/admin/i)).toBeInTheDocument();
+        expect(screen.getByPlaceholderText(/••••••••/i)).toBeInTheDocument();
         expect(screen.getByText(/Masuk Aplikasi/i)).toBeInTheDocument();
     });
 

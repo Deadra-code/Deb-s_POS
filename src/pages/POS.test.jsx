@@ -1,10 +1,14 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import POS from './POS';
 
+vi.mock('../services/api', () => ({
+    fetchData: vi.fn(() => Promise.resolve({ success: true, data: [] }))
+}));
+
 const mockMenu = [
-    { ID: '1', Nama_Menu: 'Nasi Goreng', Harga: '15000', Stock: 10, Kategori: 'Makanan' },
-    { ID: '2', Nama_Menu: 'Es Teh', Harga: '5000', Stock: 0, Kategori: 'Minuman' }
+    { ID: '1', Nama_Menu: 'Nasi Goreng', Harga: 15000, Stock: 10, Kategori: 'Utama' },
+    { ID: '2', Nama_Menu: 'Es Teh', Harga: 5000, Stock: 0, Kategori: 'Minuman' }
 ];
 
 describe('POS Component', () => {
@@ -12,6 +16,9 @@ describe('POS Component', () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
+        // Force large screen for sidebar visibility
+        Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1200 });
+        window.dispatchEvent(new Event('resize'));
     });
 
     it('renders menu items', () => {
@@ -38,14 +45,17 @@ describe('POS Component', () => {
         expect(screen.getByText('HABIS')).toBeInTheDocument();
     });
 
-    it('updates total price when items are added', () => {
+    it('updates total price when items are added', async () => {
         render(<POS menu={mockMenu} refreshData={mockRefresh} />);
 
-        fireEvent.click(screen.getByText('Nasi Goreng'));
+        const item = screen.getByText('Nasi Goreng').closest('article');
+        fireEvent.click(item);
 
-        // Check for the price. Instead of just "15", we look for the one next to "Total"
-        // or just check that we have multiple "15" occurrences.
-        const priceOccurrences = screen.getAllByText(/15/);
-        expect(priceOccurrences.length).toBeGreaterThan(1); // One in grid, one in total
+        // Check total updates
+        await waitFor(() => {
+            const totalElements = screen.getAllByTestId('cart-total');
+            const hasCorrectTotal = totalElements.some(el => el.textContent.includes('15.000') || el.textContent.includes('15,000'));
+            expect(hasCorrectTotal).toBe(true);
+        }, { timeout: 3000 });
     });
 });

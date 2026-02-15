@@ -5,6 +5,8 @@ import Icon from '../components/ui/Icon';
 import RevenueChart from '../components/analytics/RevenueChart';
 import SetoranReport from '../components/analytics/SetoranReport';
 import TopItemsList from '../components/analytics/TopItemsList';
+import haptics from '../services/haptics';
+import PullToRefresh from '../components/ui/PullToRefresh';
 
 const Analytics = () => {
     const [data, setData] = useState({ transactions: [] });
@@ -113,20 +115,26 @@ const Analytics = () => {
     if (loading) return <div className="flex h-full items-center justify-center text-emerald-600"><Loader className="animate-spin" size={32} /></div>;
 
     return (
-        <div className="p-4 md:p-8 h-full overflow-y-auto bg-slate-50 pb-24 text-slate-800">
+        <div className="p-4 md:p-8 h-full overflow-y-auto bg-slate-50 dark:bg-slate-950 pb-24 text-slate-800 dark:text-slate-100 transition-colors duration-300 relative">
+            <PullToRefresh onRefresh={() => {
+                setLoading(true);
+                fetchData('getReport').then(res => {
+                    setData(res); setLoading(false);
+                }).catch(e => setLoading(false));
+            }} isRefreshing={loading} />
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-800">Dashboard</h1>
-                    <p className="text-slate-500 text-sm">Analisa performa bisnis.</p>
+                    <h1 className="text-2xl font-bold text-slate-800 dark:text-white">Dashboard</h1>
+                    <p className="text-slate-500 dark:text-slate-400 text-sm">Analisa performa bisnis.</p>
                 </div>
                 <div className="flex flex-col md:flex-row gap-3">
-                    <select className="bg-white border border-slate-300 p-2 rounded-lg text-sm font-bold shadow-sm outline-none" value={period} onChange={e => setPeriod(e.target.value)}>
+                    <select className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 p-2 rounded-lg text-sm font-bold shadow-sm outline-none text-slate-800 dark:text-slate-200" value={period} onChange={e => { haptics.tick(); setPeriod(e.target.value); }}>
                         <option value="HARI_INI">Hari Ini</option>
                         <option value="MINGGU_INI">Minggu Ini</option>
                         <option value="BULAN_INI">Bulan Ini</option>
                         <option value="TAHUN_INI">Tahun Ini</option>
                     </select>
-                    <select className="bg-white border border-slate-300 p-2 rounded-lg text-sm font-bold shadow-sm outline-none" value={ownerFilter} onChange={e => setOwnerFilter(e.target.value)}>
+                    <select className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 p-2 rounded-lg text-sm font-bold shadow-sm outline-none text-slate-800 dark:text-slate-200" value={ownerFilter} onChange={e => { haptics.tick(); setOwnerFilter(e.target.value); }}>
                         <option value="ALL">Semua Pemilik</option>
                         <option value="Debby">Debby</option>
                         <option value="Mama">Mama</option>
@@ -134,35 +142,12 @@ const Analytics = () => {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-                <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
-                    <div className="text-slate-400 text-xs font-bold uppercase mb-1">Total Omzet</div>
-                    <div className="text-2xl font-bold text-slate-800">Rp {(stats.revenue / 1000).toLocaleString()}k</div>
-                    <div className="text-emerald-500 text-xs font-bold mt-2 flex items-center gap-1"><Icon name="trending-up" size={14} /> Gross Revenue</div>
-                </div>
-                <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
-                    <div className="text-slate-400 text-xs font-bold uppercase mb-1">Profit Bersih</div>
-                    <div className="text-2xl font-bold text-emerald-600">Rp {(stats.profit / 1000).toLocaleString()}k</div>
-                </div>
-                <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
-                    <div className="text-slate-400 text-xs font-bold uppercase mb-1">Transaksi</div>
-                    <div className="text-2xl font-bold text-blue-600">{stats.orders}</div>
-                </div>
-                <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
-                    <div className="text-slate-400 text-xs font-bold uppercase mb-1">Rata-rata Order</div>
-                    <div className="text-2xl font-bold text-purple-600">Rp {stats.orders ? Math.round(stats.revenue / stats.orders).toLocaleString() : 0}</div>
-                </div>
-            </div>
+            <RevenueChart data={stats.chartData} />
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-                <RevenueChart data={stats.chartData} />
+            {/* --- SETORAN REPORT SECTION --- */}
+            {period === 'HARI_INI' && <div className="space-y-6"><SetoranReport stats={stats} /></div>}
 
-                {/* --- SETORAN REPORT SECTION --- */}
-                {/* --- SETORAN REPORT SECTION --- */}
-                {period === 'HARI_INI' && <SetoranReport stats={stats} />}
-
-                <TopItemsList items={stats.topItems} />
-            </div>
+            <TopItemsList items={stats.topItems} />
         </div>
     );
 };

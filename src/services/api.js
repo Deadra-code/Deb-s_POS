@@ -22,10 +22,18 @@ export const fetchData = async (action, method = 'GET', body = null) => {
         return fetch(url, {
             method: "POST",
             body: JSON.stringify(body)
-        }).then(res => res.json());
+        }).then(res => res.json())
+            .catch(err => {
+                console.error(`API POST Error [${action}]:`, err);
+                throw err;
+            });
     }
 
-    return fetch(url).then(res => res.json());
+    return fetch(url).then(res => res.json())
+        .catch(err => {
+            console.error(`API GET Error [${action}]:`, err);
+            throw err;
+        });
 };
 
 let isSyncing = false;

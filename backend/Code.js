@@ -44,6 +44,8 @@ function handleRequest(e) {
       else if (action === 'getOrders') result = getActiveOrders();
       else if (action === 'updateOrderStatus') { var p = JSON.parse(e.postData.contents); result = updateOrderStatus(p.id, p.status); }
       else if (action === 'getReport') result = getSalesReport();
+      else if (action === 'testIntegrity') result = testIntegrity();
+      else if (action === 'getTopItems') result = getTopItems();
       else result = { error: "Action not found: " + action };
     }
     return responseJSON(result);
@@ -320,4 +322,66 @@ function getSalesReport() {
   });
 
   return { transactions: transactions.reverse() };
+}
+
+function testIntegrity() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheets = ss.getSheets().map(s => s.getName());
+  const required = ["Data_Menu", "Order_Data", "Transaksi_Data", "Users"];
+  const results = { ok: true, issues: [] };
+
+  required.forEach(name => {
+    if (!sheets.includes(name)) {
+      results.ok = false;
+      results.issues.push("Missing Sheet: " + name);
+    }
+  });
+
+  if (sheets.includes("Data_Menu")) {
+    const sheet = ss.getSheetByName("Data_Menu");
+    const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+    const reqCols = ["ID", "Nama_Menu", "Harga", "Modal", "Varian"];
+    reqCols.forEach(col => {
+      if (!headers.includes(col)) {
+        results.ok = false;
+        results.issues.push("Missing Column in Data_Menu: " + col);
+      }
+    });
+  }
+
+  return results;
+}
+
+function getTopItems() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName("Riwayat_Transaksi");
+  if (!sheet) return { topItems: [] };
+
+  const data = sheet.getDataRange().getValues();
+  if (data.length <= 1) return { topItems: [] };
+
+  const h = data[0];
+  const itemsIdx = h.indexOf("Items_JSON");
+  const statusIdx = h.indexOf("Status");
+  if (itemsIdx === -1) return { topItems: [] };
+
+  const counts = {};
+  data.slice(1).forEach(row => {
+    const status = String(row[statusIdx]).trim();
+    if (status === "Selesai" || status === "Proses") {
+      try {
+        const items = JSON.parse(row[itemsIdx] || "[]");
+        items.forEach(i => {
+          counts[i.nama] = (counts[i.nama] || 0) + i.qty;
+        });
+      } catch (e) { }
+    }
+  });
+
+  const topItems = Object.entries(counts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
+    .map(e => e[0]);
+
+  return { topItems };
 }

@@ -29,8 +29,8 @@ const NetworkStatus = () => {
     if (isOnline) return null;
 
     return (
-        <div className="fixed top-0 left-0 right-0 z-[200] bg-red-600 text-white px-4 py-2 text-center text-sm font-bold flex items-center justify-center gap-2 animate-in slide-in-from-top duration-300">
-            <WifiOff size={16} />
+        <div className="fixed top-0 left-0 right-0 z-[200] bg-red-600 dark:bg-red-700 text-white px-4 py-2 text-center text-sm font-bold flex items-center justify-center gap-2 animate-in slide-in-from-top duration-300 shadow-lg">
+            <WifiOff size={16} className="animate-pulse" />
             Koneksi Terputus. Beberapa fitur mungkin tidak berfungsi.
         </div>
     );

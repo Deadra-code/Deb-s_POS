@@ -11,9 +11,15 @@
     "test:e2e": "playwright test",
     "preview": "vite preview",
     "clasp:login": "clasp login",
-    "deploy:backend": "clasp push"
+    "deploy:backend": "clasp push",
+    "audit:mod": "node scripts/audit-modularity.cjs",
+    "audit:deps": "node scripts/audit-deps.cjs",
+    "audit:ui": "node scripts/audit-ui.cjs",
+    "audit:comp": "node scripts/audit-components.cjs",
+    "audit": "npm run audit:mod && npm run audit:comp && npm run audit:ui && npm run audit:deps"
   },
   "dependencies": {
+    "framer-motion": "^12.34.0",
     "lucide-react": "^0.561.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
