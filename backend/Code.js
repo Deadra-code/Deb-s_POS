@@ -191,7 +191,22 @@ function getMenuData() {
   if (!sheet) return [];
   const data = sheet.getDataRange().getDisplayValues();
   if (data.length <= 1) return [];
-  const h = data[0];
+
+  let h = data[0];
+
+  // SELF-HEAL: Check/Fix Missing 'Varian' Header
+  // If the sheet existed before V2, it might miss the 10th col header
+  if (!h.includes("Varian")) {
+    const varianColIndex = 10;
+    // Check if header is actually missing or just empty
+    if (h.length < varianColIndex) {
+      sheet.getRange(1, varianColIndex).setValue("Varian");
+      h = sheet.getRange(1, 1, 1, varianColIndex).getValues()[0]; // Reload headers
+    } else if (h[varianColIndex - 1] === "") {
+      sheet.getRange(1, varianColIndex).setValue("Varian");
+      h[varianColIndex - 1] = "Varian";
+    }
+  }
 
   return data.slice(1).map((row, i) => {
     let obj = { _rowIndex: i + 2 };
@@ -201,6 +216,10 @@ function getMenuData() {
     obj.Harga = parseInt(String(obj.Harga).replace(/[^0-9]/g, '')) || 0;
     obj.Modal = parseInt(String(obj.Modal).replace(/[^0-9]/g, '')) || 0;
     obj.Stock = parseInt(String(obj.Stock).replace(/[^0-9-]/g, '')) || 0;
+
+    // Explicit read for Varian if header fallback failed (Safety net)
+    if (!obj.Varian && row[9]) obj.Varian = row[9];
+
     return obj;
   });
 }
