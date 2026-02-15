@@ -86,7 +86,7 @@ const DashboardLayout = ({ view, setView, onLogout }) => {
                             transition={{ duration: 0.2, ease: "easeOut" }}
                             className="h-full w-full"
                         >
-                            {view === 'ANALYTICS' && <Analytics />}
+                            {view === 'ANALYTICS' && <Analytics loading={menuLoading} />}
                             {view === 'POS' && <POS menu={menuData} refreshData={refreshData} loading={menuLoading} />}
                             {view === 'INVENTORY' && <Inventory menu={menuData} refreshData={refreshData} loading={menuLoading} />}
                             {view === 'HISTORY' && <OrderHistory />}

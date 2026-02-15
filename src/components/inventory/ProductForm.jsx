@@ -86,8 +86,9 @@ const ProductForm = ({ initialData, onSubmit, loading }) => {
                 </div>
 
                 <div className="space-y-1">
-                    <label className="text-xs font-bold uppercase text-slate-500 dark:text-slate-400">Nama Produk</label>
+                    <label htmlFor="nama_produk" className="text-xs font-bold uppercase text-slate-500 dark:text-slate-400">Nama Produk</label>
                     <input
+                        id="nama_produk"
                         required
                         className="w-full border border-slate-200 dark:border-slate-700 p-3 rounded-xl bg-white dark:bg-slate-800 focus:ring-2 focus:ring-emerald-500 outline-none transition-all text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-600 shadow-sm"
                         value={formData.Nama_Menu}
@@ -98,8 +99,9 @@ const ProductForm = ({ initialData, onSubmit, loading }) => {
 
                 <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1">
-                        <label className="text-xs font-bold uppercase text-emerald-700 dark:text-emerald-400">Harga Jual (Rp)</label>
+                        <label htmlFor="harga" className="text-xs font-bold uppercase text-emerald-700 dark:text-emerald-400">Harga Jual (Rp)</label>
                         <input
+                            id="harga"
                             type="number"
                             required
                             className="w-full border border-emerald-100 dark:border-emerald-900/30 bg-emerald-50 dark:bg-emerald-950/20 p-3 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none font-bold text-emerald-800 dark:text-emerald-300"
@@ -108,8 +110,9 @@ const ProductForm = ({ initialData, onSubmit, loading }) => {
                         />
                     </div>
                     <div className="space-y-1">
-                        <label className="text-xs font-bold uppercase text-slate-500 dark:text-slate-400">Modal (Rp)</label>
+                        <label htmlFor="modal" className="text-xs font-bold uppercase text-slate-500 dark:text-slate-400">Modal (Rp)</label>
                         <input
+                            id="modal"
                             type="number"
                             required
                             className="w-full border border-slate-200 dark:border-slate-700 p-3 rounded-xl bg-slate-50 dark:bg-slate-800 focus:ring-2 focus:ring-slate-400 dark:focus:ring-slate-600 outline-none text-slate-800 dark:text-slate-100"
@@ -121,8 +124,9 @@ const ProductForm = ({ initialData, onSubmit, loading }) => {
 
                 <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1">
-                        <label className="text-xs font-bold uppercase text-slate-500 dark:text-slate-400">Stok Awal</label>
+                        <label htmlFor="stock" className="text-xs font-bold uppercase text-slate-500 dark:text-slate-400">Stok Awal</label>
                         <input
+                            id="stock"
                             type="number"
                             required
                             className="w-full border border-slate-200 dark:border-slate-700 p-3 rounded-xl bg-white dark:bg-slate-800 focus:ring-2 focus:ring-emerald-500 outline-none text-slate-800 dark:text-slate-100"
@@ -131,8 +135,9 @@ const ProductForm = ({ initialData, onSubmit, loading }) => {
                         />
                     </div>
                     <div className="space-y-1">
-                        <label className="text-xs font-bold uppercase text-slate-500 dark:text-slate-400">Kategori</label>
+                        <label htmlFor="kategori" className="text-xs font-bold uppercase text-slate-500 dark:text-slate-400">Kategori</label>
                         <select
+                            id="kategori"
                             className="w-full border border-slate-200 dark:border-slate-700 p-3 rounded-xl bg-white dark:bg-slate-800 focus:ring-2 focus:ring-emerald-500 outline-none text-slate-800 dark:text-slate-100"
                             value={formData.Kategori}
                             onChange={e => setFormData({ ...formData, Kategori: e.target.value })}

@@ -14,6 +14,7 @@ import { motion } from 'framer-motion';
 import { AnimatePresence } from 'framer-motion';
 import haptics from '../services/haptics';
 import PullToRefresh from '../components/ui/PullToRefresh';
+import { OWNERS, DEFAULT_OWNER } from '../config/owners';
 
 const POS = ({ menu, refreshData, loading: menuLoading }) => {
     const [cart, setCart] = useState([]);
@@ -30,7 +31,7 @@ const POS = ({ menu, refreshData, loading: menuLoading }) => {
     const [modifierModalOpen, setModifierModalOpen] = useState(false);
     const [selectedItemForMod, setSelectedItemForMod] = useState(null);
     const [activeModifiers, setActiveModifiers] = useState([]);
-    const [customItem, setCustomItem] = useState({ name: '', price: '', milik: 'Debby' });
+    const [customItem, setCustomItem] = useState({ name: '', price: '', milik: DEFAULT_OWNER });
     const [topItemNames, setTopItemNames] = useState([]);
 
     useEffect(() => {
@@ -100,7 +101,7 @@ const POS = ({ menu, refreshData, loading: menuLoading }) => {
     };
 
     const addCustomItem = () => {
-        if (!customItem.name || !customItem.price) return alert("Isi nama dan harga!");
+        if (!customItem.name || !customItem.price) return setToast({ msg: "Isi nama dan harga!", type: 'error' });
         const newItem = {
             ID: `custom-${Date.now()}`,
             Nama_Menu: customItem.name,
@@ -123,7 +124,7 @@ const POS = ({ menu, refreshData, loading: menuLoading }) => {
     const handleCheckout = () => {
         setLoading(true);
         const payload = {
-            cart: cart.map(i => ({ nama: i.Nama_Menu, qty: i.qty, harga: i.Harga, modal: i.Modal, milik: i.Milik || "Debby" })),
+            cart: cart.map(i => ({ nama: i.Nama_Menu, qty: i.qty, harga: i.Harga, modal: i.Modal, milik: i.Milik || DEFAULT_OWNER })),
             total,
             type: tab,
             paymentMethod: payMethod,
@@ -144,7 +145,7 @@ const POS = ({ menu, refreshData, loading: menuLoading }) => {
             .catch(err => {
                 haptics.error();
                 setLoading(false);
-                alert("Transaksi Gagal: " + err);
+                setToast({ msg: "Transaksi Gagal: " + err, type: 'error' });
             });
     };
 

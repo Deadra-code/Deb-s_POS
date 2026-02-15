@@ -44,25 +44,33 @@ let isSyncing = false;
 export const syncOfflineOrders = async () => {
     if (isSyncing) return;
 
-    const pending = JSON.parse(localStorage.getItem('POS_PENDING_ORDERS') || '[]');
+    let pending = JSON.parse(localStorage.getItem('POS_PENDING_ORDERS') || '[]');
     if (pending.length === 0) return;
 
     isSyncing = true;
     try {
-        // Process sequentially to avoid flooding
+        const remaining = [];
         for (const order of pending) {
             try {
-                await fetch(`${API_URL}?action=saveOrder`, {
+                const res = await fetch(`${API_URL}?action=saveOrder`, {
                     method: "POST",
                     body: JSON.stringify(order.body)
                 });
+
+                if (!res.ok) {
+                    remaining.push(order);
+                }
             } catch (e) {
                 console.error("Sync failed for an order", e);
-                // Continue to try next orders? Or stop? 
-                // Better to stop to preserve order, but for now we try all.
+                remaining.push(order);
             }
         }
-        localStorage.removeItem('POS_PENDING_ORDERS');
+
+        if (remaining.length > 0) {
+            localStorage.setItem('POS_PENDING_ORDERS', JSON.stringify(remaining));
+        } else {
+            localStorage.removeItem('POS_PENDING_ORDERS');
+        }
     } finally {
         isSyncing = false;
     }

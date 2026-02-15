@@ -45,3 +45,12 @@ body {
 .pb-safe {
   padding-bottom: env(safe-area-inset-bottom);
 }
+
+@keyframes progress-shrink {
+  from { transform: scaleX(1); }
+  to { transform: scaleX(0); }
+}
+
+.animate-progress-shrink {
+  animation: progress-shrink linear forwards;
+}

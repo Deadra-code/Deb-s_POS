@@ -20,7 +20,8 @@ function handleRequest(e) {
 
     if (action === 'login') {
       var payload = JSON.parse(e.postData.contents);
-      result = attemptLogin(payload.username, payload.password);
+      // Frontend sends { passcode: "..." }, route it to attemptLogin
+      result = attemptLogin(null, payload.passcode || payload.password);
     }
     // Action Setup (Buat tabel user) tidak butuh login
     else if (action === 'setup') {
@@ -45,6 +46,7 @@ function handleRequest(e) {
       else if (action === 'getOrders') result = getActiveOrders();
       else if (action === 'updateOrderStatus') { var p = JSON.parse(e.postData.contents); result = updateOrderStatus(p.id, p.status); }
       else if (action === 'getReport') result = getSalesReport();
+      else if (action === 'getInflow') result = []; // Placeholder for future feature
       else if (action === 'testIntegrity') result = testIntegrity();
       else if (action === 'getTopItems') result = getTopItems();
       else result = { error: "Action not found: " + action };
@@ -56,33 +58,99 @@ function handleRequest(e) {
     lock.releaseLock();
   }
 }
+
 function responseJSON(data) {
   return ContentService.createTextOutput(JSON.stringify(data)).setMimeType(ContentService.MimeType.JSON);
 }
+
 // --- NEW AUTHORIZATION LOGIC ---
 function attemptLogin(username, password) {
+  // Support Passcode-only login (params might be just passcode as first arg or inside object)
+  // If called from doGet/Post with payload.passcode
+  var inputPass = password || username; // Flexible handling
+
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   let sheet = ss.getSheetByName("Data_User");
 
   if (!sheet) {
-    // Auto-create jika belum ada (Fallback)
     setupDatabase();
     sheet = ss.getSheetByName("Data_User");
   }
 
-  const data = sheet.getDataRange().getValues(); // [Header, [u1,p1], [u2,p2]...]
-
-  // Skip Header (row 0)
+  const data = sheet.getDataRange().getValues();
   for (let i = 1; i < data.length; i++) {
-    // Kolom 0 = Username, Kolom 1 = Password
-    if (String(data[i][0]).toLowerCase() === String(username).toLowerCase() && String(data[i][1]) === String(password)) {
-      // SUKSES
-      const token = Utilities.base64Encode(username + "_" + new Date().getTime());
-      return { success: true, token: token, role: "admin" };
+    // Check if input matches any password
+    if (String(data[i][1]) === String(inputPass)) {
+      const token = Utilities.base64Encode(data[i][0] + "_" + new Date().getTime());
+      return { success: true, token: token, role: data[i][2] || "admin" };
     }
   }
+  return { error: "Passcode Salah!" };
+}
 
-  return { error: "Username atau Password Salah!" };
+// ... (Database and Menu functions remain unchanged) ...
+
+// --- SALES REPORT ---
+function getSalesReport() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheetTrx = ss.getSheetByName("Riwayat_Transaksi");
+  const sheetMenu = ss.getSheetByName("Data_Menu");
+
+  if (!sheetTrx || !sheetMenu) return { transactions: [] };
+
+  // 1. Ambil Data Modal (Cost) dari Menu (Fallback)
+  const menuRaw = sheetMenu.getDataRange().getValues();
+  let costMap = {};
+  if (menuRaw.length > 1) {
+    menuRaw.slice(1).forEach(r => {
+      costMap[r[1]] = parseInt(String(r[8]).replace(/[^0-9]/g, '')) || 0;
+    });
+  }
+
+  // 2. Ambil Transaksi
+  const trxData = sheetTrx.getDataRange().getDisplayValues();
+  if (trxData.length <= 1) return { transactions: [] };
+
+  const h = trxData[0];
+  const idx = {
+    tgl: h.indexOf("Tanggal"),
+    jam: h.indexOf("Jam"),
+    items: h.indexOf("Items_JSON"),
+    total: h.indexOf("Total_Bayar"),
+    status: h.indexOf("Status"),
+    tipe: h.indexOf("Tipe_Order")
+  };
+
+  let transactions = trxData.slice(1).map(row => {
+    let items = [];
+    let grossTotal = parseInt(String(row[idx.total]).replace(/[^0-9]/g, '')) || 0;
+    let totalCost = 0;
+
+    try {
+      items = JSON.parse(row[idx.items] || "[]");
+      items.forEach(i => {
+        // Prioritize stored modal in transaction, fallback to current menu cost
+        let itemCost = (i.modal !== undefined) ? parseInt(i.modal) : (costMap[i.nama] || 0);
+        totalCost += (itemCost * i.qty);
+      });
+    } catch (e) {
+      console.error("Error getting usage logs:", e);
+      return [];
+    }
+
+    return {
+      date: row[idx.tgl],
+      time: row[idx.jam],
+      total: grossTotal,
+      cost: totalCost,
+      profit: grossTotal - totalCost,
+      items: items,
+      type: row[idx.tipe],
+      status: row[idx.status]
+    };
+  });
+
+  return { transactions: transactions.reverse() };
 }
 // --- DATABASE LOGIC (Updated Setup) ---
 function setupDatabase() {
@@ -263,69 +331,6 @@ function getActiveOrders() {
   }))
     .filter(o => String(o.Status).trim().toLowerCase() === 'proses')
     .reverse();
-}
-
-// --- SALES REPORT ---
-function getSalesReport() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sheetTrx = ss.getSheetByName("Riwayat_Transaksi");
-  const sheetMenu = ss.getSheetByName("Data_Menu");
-
-  if (!sheetTrx || !sheetMenu) return { transactions: [] };
-
-  // 1. Ambil Data Modal (Cost) dari Menu
-  const menuRaw = sheetMenu.getDataRange().getValues();
-  let costMap = {};
-  if (menuRaw.length > 1) {
-    menuRaw.slice(1).forEach(r => {
-      // Nama=Col 2(idx 1), Modal=Col 9(idx 8)
-      costMap[r[1]] = parseInt(String(r[8]).replace(/[^0-9]/g, '')) || 0;
-    });
-  }
-
-  // 2. Ambil Transaksi
-  const trxData = sheetTrx.getDataRange().getDisplayValues();
-  if (trxData.length <= 1) return { transactions: [] };
-
-  const h = trxData[0];
-  const idx = {
-    tgl: h.indexOf("Tanggal"),
-    jam: h.indexOf("Jam"),
-    items: h.indexOf("Items_JSON"),
-    total: h.indexOf("Total_Bayar"),
-    status: h.indexOf("Status"),
-    tipe: h.indexOf("Tipe_Order")
-  };
-
-  let transactions = trxData.slice(1).map(row => {
-    let items = [];
-    let grossTotal = parseInt(String(row[idx.total]).replace(/[^0-9]/g, '')) || 0;
-    let totalCost = 0;
-
-    try {
-      items = JSON.parse(row[idx.items] || "[]");
-      items.forEach(i => {
-        let itemCost = costMap[i.nama] || 0;
-        totalCost += (itemCost * i.qty);
-      });
-    } catch (e) {
-      console.error("Error getting usage logs:", e);
-      return [];
-    }
-
-    return {
-      date: row[idx.tgl],
-      time: row[idx.jam],
-      total: grossTotal,
-      cost: totalCost,
-      profit: grossTotal - totalCost,
-      items: items,
-      type: row[idx.tipe],
-      status: row[idx.status]
-    };
-  });
-
-  return { transactions: transactions.reverse() };
 }
 
 function testIntegrity() {

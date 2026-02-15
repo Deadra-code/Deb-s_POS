@@ -2,47 +2,49 @@ import { test, expect } from '@playwright/test';
 
 test.describe('POS Transaction Flow', () => {
     test.beforeEach(async ({ page }) => {
-        // Mock the GAS API
         await page.route('**/macros/s/**', async route => {
-            const postData = route.request().postData() || '';
-            if (postData.includes('action=login')) {
+            const url = route.request().url();
+            if (url.includes('action=login')) {
                 await route.fulfill({ status: 200, body: JSON.stringify({ success: true, token: 'fake-token' }) });
-            } else if (postData.includes('action=getMenu')) {
+            } else if (url.includes('action=getMenu')) {
                 await route.fulfill({
                     status: 200,
                     body: JSON.stringify([{ ID: '1', Nama_Menu: 'Kopi', Harga: '5000', Stock: 10, Kategori: 'Minuman' }])
                 });
-            } else if (postData.includes('action=saveOrder')) {
+            } else if (url.includes('action=saveOrder')) {
                 await route.fulfill({ status: 200, body: JSON.stringify({ success: true }) });
-            } else if (postData.includes('action=getReport')) {
+            } else if (url.includes('action=getReport')) {
                 await route.fulfill({ status: 200, body: JSON.stringify({ transactions: [] }) });
             } else {
                 await route.fulfill({ status: 200, body: '[]' });
             }
         });
 
-        // Login
         await page.goto('./');
-        await page.getByPlaceholder('Username').fill('admin');
-        await page.getByPlaceholder('Password').fill('admin');
-        // Click login
-        await page.getByText('Masuk Aplikasi').click();
-        // Wait for app title to confirm login
-        await expect(page.locator('text=Deb\'s Manager')).toBeVisible({ timeout: 15000 });
+        await page.getByPlaceholder('••••••').fill('123456');
+        await page.getByText('Masuk Sekarang').click();
+        await expect(page.locator('h1, h2, span:visible').filter({ hasText: 'Dashboard' }).first()).toBeVisible({ timeout: 15000 });
     });
 
-    test('should complete a full transaction', async ({ page }) => {
-        await page.getByRole('button', { name: /Point of Sales/i }).click();
+    test('should complete a full transaction', async ({ page, isMobile }) => {
+        const posLabel = isMobile ? 'Kasir' : 'Point of Sales';
+        await page.locator(`button:has-text("${posLabel}")`).first().click();
 
-        // Wait for mock data
         await expect(page.locator('text=Kopi')).toBeVisible({ timeout: 10000 });
         await page.locator('text=Kopi').click();
 
-        // Checkout - ensure we are clicking the actual button
-        const checkoutBtn = page.getByRole('button', { name: /Bayar Sekarang/i });
-        await checkoutBtn.click();
+        if (isMobile) {
+            // Mobile: Click floating cart button then "Lanjut Bayar"
+            await page.locator('button').filter({ hasText: /Rp/ }).filter({ visible: true }).first().click();
+            await page.locator('button:has-text("Lanjut Bayar")').click();
+        } else {
+            // Desktop: Click "Proses Pembayaran" directly
+            await page.locator('button:has-text("Proses Pembayaran")').click();
+        }
 
-        // Verify success toast
-        await expect(page.locator('text=Berhasil! Transaksi telah disimpan')).toBeVisible({ timeout: 10000 });
+        await expect(page.locator('text=Konfirmasi Pembayaran')).toBeVisible();
+        await page.locator('button:has-text("Bayar via")').first().click();
+
+        await expect(page.locator('text=Berhasil')).toBeVisible({ timeout: 10000 });
     });
 });
