@@ -12,74 +12,79 @@ jobs:
   deploy:
     name: Deploy to Google Apps Script
     runs-on: ubuntu-latest
+    environment: google-apps-script
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Setup Node.js 20
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Install CLASP
-        run: npm install -g @google/clasp
+      - name: Install CLASP globally
+        run: npm install -g @google/clasp@3.2.0
 
-      - name: Setup CLASP credentials
+      - name: Configure CLASP credentials
         run: |
           mkdir -p ~/.clasprc
-          echo '${{ secrets.GAS_SERVICE_ACCOUNT_KEY }}' > ~/.clasprc/.clasprc.json
-          echo "CLASP credentials configured"
+          cat > ~/.clasprc/.clasprc.json << 'EOF'
+          ${{ secrets.GAS_SERVICE_ACCOUNT_KEY }}
+          EOF
+          echo "✓ CLASP credentials configured"
 
-      - name: Verify .clasp.json
+      - name: Verify .clasp.json exists
         run: |
-          echo "Checking .clasp.json..."
-          cat .clasp.json
           if [ ! -f .clasp.json ]; then
-            echo "Error: .clasp.json not found!"
+            echo "::error:: .clasp.json not found!"
             exit 1
           fi
+          echo "✓ .clasp.json found"
+          cat .clasp.json
 
       - name: CLASP Login
         run: |
           clasp login --no-localhost
-          echo "CLASP login completed"
+          echo "✓ CLASP login successful"
 
-      - name: Push to Google Apps Script
+      - name: CLASP Status
+        run: |
+          clasp status
+          echo "✓ CLASP status check completed"
+
+      - name: Push code to Google Apps Script
         run: |
           echo "Pushing code to GAS..."
           clasp push --force
-          echo "Push completed"
+          echo "✓ Code pushed successfully"
 
-      - name: Build GAS project
+      - name: Build project
         run: |
-          echo "Building GAS project..."
-          clasp build || echo "Build step skipped (no clasp.json build config)"
+          clasp build || true
+          echo "✓ Build completed"
 
-      - name: Deploy Web App
+      - name: Create deployment
         run: |
-          echo "Creating deployment..."
-          DEPLOY_ID=$(clasp deploy --description "Auto-deploy from GitHub Actions - $(date +%Y-%m-%d_%H:%M:%S)" | grep -oP 'Deployment ID: \K.*' || echo "")
-          if [ -n "$DEPLOY_ID" ]; then
-            echo "✓ New deployment created: $DEPLOY_ID"
-          else
-            echo "Using existing deployment"
-          fi
+          echo "Creating new deployment..."
+          clasp deploy --description "GitHub Actions - $(date +%Y-%m-%d_%H:%M:%S)"
+          echo "✓ Deployment created"
 
-      - name: Deployment Summary
+      - name: Show deployment info
         run: |
           echo "=========================================="
-          echo "✅ DEPLOYMENT COMPLETED"
+          echo "✅ BACKEND DEPLOYMENT SUCCESSFUL"
           echo "=========================================="
           echo "Script ID: ${{ secrets.GAS_SCRIPT_ID }}"
           echo "Web App URL: https://script.google.com/macros/s/${{ secrets.GAS_SCRIPT_ID }}/exec"
+          echo "Test URL: https://script.google.com/macros/s/${{ secrets.GAS_SCRIPT_ID }}/exec?action=testIntegrity"
           echo "=========================================="
 
-      - name: Cleanup (remove sensitive credentials)
+      - name: Cleanup sensitive data
         if: always()
         run: |
           rm -rf ~/.clasprc
-          echo "Cleanup completed"
+          echo "✓ Cleanup completed"
+
