@@ -1,6 +1,8 @@
 // =========================================================
-// DEB'S POS PRO - SECURE BACKEND API (v3.1 with Token Expiry)
+// DEB'S POS PRO - SECURE BACKEND API (v3.1.1 with Auto-Deploy)
 // =========================================================
+// Last Updated: 2026-02-24
+// Deployed via: GitHub Actions CI/CD
 
 // 1. HTTP HANDLERS
 function doGet(e) {
