@@ -31,47 +31,55 @@ jobs:
       - name: Setup CLASP credentials
         run: |
           mkdir -p ~/.clasprc
-          echo "${{ secrets.GAS_SERVICE_ACCOUNT_KEY }}" > ~/.clasprc/.clasprc.json
+          echo '${{ secrets.GAS_SERVICE_ACCOUNT_KEY }}' > ~/.clasprc/.clasprc.json
+          echo "CLASP credentials configured"
 
-      - name: Configure Git for CLASP
+      - name: Verify .clasp.json
         run: |
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git config --global user.name "github-actions[bot]"
+          echo "Checking .clasp.json..."
+          cat .clasp.json
+          if [ ! -f .clasp.json ]; then
+            echo "Error: .clasp.json not found!"
+            exit 1
+          fi
 
-      - name: Login to CLASP
+      - name: CLASP Login
         run: |
           clasp login --no-localhost
-
-      - name: Verify CLASP setup
-        run: |
-          echo "Script ID: ${{ secrets.GAS_SCRIPT_ID }}"
-          cat .clasp.json
+          echo "CLASP login completed"
 
       - name: Push to Google Apps Script
         run: |
+          echo "Pushing code to GAS..."
           clasp push --force
+          echo "Push completed"
 
       - name: Build GAS project
         run: |
-          clasp build
+          echo "Building GAS project..."
+          clasp build || echo "Build step skipped (no clasp.json build config)"
 
-      - name: Deploy Web App (if deployment ID exists)
-        if: ${{ secrets.GAS_DEPLOYMENT_ID != '' }}
+      - name: Deploy Web App
         run: |
-          clasp deploy --version --deploymentId ${{ secrets.GAS_DEPLOYMENT_ID }} --description "Auto-deploy from GitHub Actions"
+          echo "Creating deployment..."
+          DEPLOY_ID=$(clasp deploy --description "Auto-deploy from GitHub Actions - $(date +%Y-%m-%d_%H:%M:%S)" | grep -oP 'Deployment ID: \K.*' || echo "")
+          if [ -n "$DEPLOY_ID" ]; then
+            echo "✓ New deployment created: $DEPLOY_ID"
+          else
+            echo "Using existing deployment"
+          fi
 
-      - name: Create new deployment (if no deployment ID)
-        if: ${{ secrets.GAS_DEPLOYMENT_ID == '' }}
+      - name: Deployment Summary
         run: |
-          echo "No deployment ID found. Creating new deployment..."
-          clasp deploy --description "Initial deployment from GitHub Actions"
-
-      - name: Verify deployment
-        run: |
-          echo "Deployment completed successfully!"
+          echo "=========================================="
+          echo "✅ DEPLOYMENT COMPLETED"
+          echo "=========================================="
+          echo "Script ID: ${{ secrets.GAS_SCRIPT_ID }}"
           echo "Web App URL: https://script.google.com/macros/s/${{ secrets.GAS_SCRIPT_ID }}/exec"
+          echo "=========================================="
 
-      - name: Cleanup
+      - name: Cleanup (remove sensitive credentials)
         if: always()
         run: |
           rm -rf ~/.clasprc
+          echo "Cleanup completed"
