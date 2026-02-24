@@ -29,6 +29,7 @@ This folder contains all documentation for the Deb's POS project. Start here for
 | [TESTING.md](./TESTING.md) | Testing guide for unit, component, and E2E tests |
 | [SCRIPTS.md](./SCRIPTS.md) | Utility scripts reference |
 | [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) | Common issues and solutions |
+| **[GAS_CICD_SETUP.md](./GAS_CICD_SETUP.md)** | **🤖 Full CI/CD automation setup (NEW!)** |
 | **[CONSTRAINTS.md](./CONSTRAINTS.md)** | **⚠️ Larangan & anti-patterns (WAJIB BACA!)** |
 
 ---
