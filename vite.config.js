@@ -28,9 +28,45 @@ export default defineConfig({
             type: "image/png"
           }
         ]
+      },
+      // PWA workbox configuration for better caching
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/script\.google\.com\/.*/i,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'api-cache',
+              expiration: {
+                maxEntries: 100,
+                maxAgeSeconds: 60 * 60 * 24 // 1 day
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
+            }
+          }
+        ]
       }
     })
   ],
+  build: {
+    // Code splitting dengan function untuk rolldown-vite compatibility
+    rollupOptions: {
+      output: {
+        manualChunks: (id) => {
+          if (id.includes('node_modules/react')) return 'react-vendor';
+          if (id.includes('node_modules/react-dom')) return 'react-vendor';
+          if (id.includes('node_modules/recharts')) return 'charts-vendor';
+          if (id.includes('node_modules/framer-motion')) return 'motion-vendor';
+          if (id.includes('node_modules/lucide-react')) return 'icons-vendor';
+        }
+      }
+    },
+    // Reduce chunk size warning limit
+    chunkSizeWarningLimit: 500
+  },
   test: {
     globals: true,
     environment: 'jsdom',

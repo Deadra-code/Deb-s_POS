@@ -62,7 +62,7 @@ const Analytics = ({ loading: parentLoading }) => {
                     if (t.paymentMethod === 'Tunai') cashInDrawer += val;
                     else digitalBank += val;
 
-                    if (ownerTotals.hasOwnProperty(t.owner)) {
+                    if (Object.hasOwn(ownerTotals, t.owner)) {
                         ownerTotals[t.owner] += val;
                     }
                 }

@@ -1,5 +1,5 @@
 // =========================================================
-// DEB'S POS PRO - SECURE BACKEND API (v3.0 Dynamic Auth)
+// DEB'S POS PRO - SECURE BACKEND API (v3.1 with Token Expiry)
 // =========================================================
 
 // 1. HTTP HANDLERS
@@ -9,12 +9,84 @@ function doGet(e) {
 function doPost(e) {
   return handleRequest(e);
 }
+
+// --- TOKEN VALIDATION WITH EXPIRATION ---
+function validateToken(token) {
+  if (!token) return { valid: false, error: 'No token provided' };
+  
+  try {
+    var decoded = Utilities.base64Decode(token);
+    var decodedStr = Utilities.newBlob(decoded).getDataAsString();
+    var parts = decodedStr.split('_');
+    
+    if (parts.length < 2) return { valid: false, error: 'Invalid token format' };
+    
+    var username = parts[0];
+    var timestamp = parseInt(parts[1]);
+    var now = new Date().getTime();
+    var age = now - timestamp;
+    
+    // Token expires after 24 hours
+    var TOKEN_LIFETIME = 24 * 60 * 60 * 1000; // 24 hours
+    
+    if (age > TOKEN_LIFETIME) {
+      return { valid: false, error: 'Token expired' };
+    }
+    
+    return { valid: true, username: username };
+  } catch (e) {
+    return { valid: false, error: 'Token validation failed: ' + e.toString() };
+  }
+}
+
+// --- RATE LIMITING ---
+var rateLimitStore = {};
+
+function checkRateLimit(identifier) {
+  var now = new Date().getTime();
+  var WINDOW_MS = 60 * 1000; // 1 minute window
+  var MAX_REQUESTS = 100; // 100 requests per minute
+  
+  if (!rateLimitStore[identifier]) {
+    rateLimitStore[identifier] = { count: 0, resetAt: now + WINDOW_MS };
+  }
+  
+  var record = rateLimitStore[identifier];
+  
+  // Reset if window expired
+  if (now > record.resetAt) {
+    record = { count: 0, resetAt: now + WINDOW_MS };
+    rateLimitStore[identifier] = record;
+  }
+  
+  record.count++;
+  
+  if (record.count > MAX_REQUESTS) {
+    return { allowed: false, remaining: 0, resetAt: record.resetAt };
+  }
+  
+  return { allowed: true, remaining: MAX_REQUESTS - record.count, resetAt: record.resetAt };
+}
+
 function handleRequest(e) {
   var lock = LockService.getScriptLock();
   lock.tryLock(10000);
   try {
     var action = e.parameter.action;
     var result = {};
+    
+    // --- RATE LIMITING CHECK ---
+    var clientId = e.parameter.clientId || 
+                   (e.postData && e.postData.contents ? 
+                    Utilities.computeDigest(Utilities.DigestAlgorithm.MD5, e.postData.contents).slice(0, 8).join('') : 
+                    'unknown');
+    var rateCheck = checkRateLimit(clientId);
+    if (!rateCheck.allowed) {
+      return responseJSON({ 
+        error: 'Rate limit exceeded', 
+        retryAfter: Math.ceil((rateCheck.resetAt - new Date().getTime()) / 1000) 
+      });
+    }
 
     // --- AUTHENTICATION CHECK ---
 
@@ -29,12 +101,22 @@ function handleRequest(e) {
     }
     else {
       // PROTEKSI: Cek Token untuk action lain
-      // Di versi ini frontend harus kirim ?token=... atau body {token:...}
-      // Opsional: Aktifkan jika ingin sangat ketat
-      /*
       var token = e.parameter.token;
-      if(!token) return responseJSON({error:"Unauthorized"});
-      */
+      if (!token && e.postData && e.postData.contents) {
+        try {
+          var body = JSON.parse(e.postData.contents);
+          token = body.token;
+        } catch (err) {
+          // Token not in body
+        }
+      }
+      
+      if (token) {
+        var tokenValidation = validateToken(token);
+        if (!tokenValidation.valid) {
+          return responseJSON({ error: 'Unauthorized: ' + tokenValidation.error, requiresLogin: true });
+        }
+      }
 
       // Routing Regular
       if (action === 'getMenu') result = getMenuData();

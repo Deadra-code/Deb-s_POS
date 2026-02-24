@@ -13,6 +13,7 @@
     "clasp:login": "clasp login",
     "sync-api": "node scripts/sync-api-url.cjs",
     "deploy:backend": "clasp push",
+    "backup": "node scripts/backup-data.js",
     "audit:mod": "node scripts/audit-modularity.cjs",
     "audit:deps": "node scripts/audit-deps.cjs",
     "audit:ui": "node scripts/audit-ui.cjs",

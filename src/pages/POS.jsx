@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { Loader } from 'lucide-react';
-import { fetchData } from '../services/api';
+import { fetchData, clearCache } from '../services/api';
 import Icon from '../components/ui/Icon';
 import Modal from '../components/ui/Modal';
 import Toast from '../components/ui/Toast';
@@ -16,6 +16,7 @@ import haptics from '../services/haptics';
 import PullToRefresh from '../components/ui/PullToRefresh';
 import { OWNERS, DEFAULT_OWNER } from '../config/owners';
 import { formatCurrency } from '../utils/format';
+import { printReceipt } from '../services/receiptPrinter';
 
 const POS = ({ menu, refreshData, loading: menuLoading }) => {
     const [cart, setCart] = useState([]);
@@ -140,8 +141,23 @@ const POS = ({ menu, refreshData, loading: menuLoading }) => {
                     setToast({ msg: "Transaksi Disimpan Offline ⚠️", type: 'warning' });
                 } else {
                     setToast({ msg: "Transaksi Berhasil!" });
+                    // Print receipt after successful transaction
+                    const orderData = {
+                        id: res.id || 'ORD-' + Date.now().toString().slice(-6),
+                        items: cart.map(i => ({ 
+                            nama: i.Nama_Menu, 
+                            qty: i.qty, 
+                            harga: i.Harga 
+                        })),
+                        total,
+                        paymentMethod: payMethod,
+                        cashier: localStorage.getItem('POS_USER') || 'Admin',
+                        date: new Date().toISOString()
+                    };
+                    printReceipt(orderData, "Deb's Kitchen", false);
                 }
                 refreshData();
+                clearCache(); // Clear cache to get fresh data
             })
             .catch(err => {
                 haptics.error();
