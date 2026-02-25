@@ -222,7 +222,7 @@ const Analytics = ({ loading: parentLoading }) => {
 
           <div className="flex bg-white dark:bg-slate-900 p-1 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800">
             {periodButtons.map((btn) => (
-              <button
+              <button type="button"
                 key={btn.id}
                 onClick={() => {
                   haptics.tick();

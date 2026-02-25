@@ -20,7 +20,7 @@ const KitchenOrderCard = ({ order, onDone }) => {
                 ))}
             </div>
             <div className="p-3 bg-slate-50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-800">
-                <button
+                <button type="button"
                     onClick={() => {
                         haptics.tap();
                         onDone(order.ID_Order);

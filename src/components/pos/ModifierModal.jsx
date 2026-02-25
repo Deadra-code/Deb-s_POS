@@ -62,7 +62,7 @@ const ModifierModal = ({ isOpen, onClose, item, activeAddons, setActiveAddons, o
             title="Kustomisasi Pesanan"
             footer={
                 <div className="p-1">
-                    <button
+                    <button type="button"
                         onClick={handleConfirm}
                         disabled={isMissingRequired}
                         className={`w-full py-4 rounded-2xl font-bold text-lg shadow-xl shadow-emerald-500/10 transition-all active:scale-[0.98] h-14 flex items-center justify-center gap-2 ${isMissingRequired ? 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-600 cursor-not-allowed' : 'bg-emerald-600 dark:bg-emerald-500 text-white hover:bg-emerald-700 dark:hover:bg-emerald-600'}`}
@@ -95,7 +95,7 @@ const ModifierModal = ({ isOpen, onClose, item, activeAddons, setActiveAddons, o
                         </label>
                         <div className="grid grid-cols-2 gap-3">
                             {group.options.map(opt => (
-                                <button
+                                <button type="button"
                                     key={opt}
                                     onClick={() => setSelectedVariants(p => ({ ...p, [group.name]: opt }))}
                                     className={`relative py-3 px-4 rounded-xl border-2 text-left transition-all duration-200 active:scale-[0.98] ${selectedVariants[group.name] === opt
@@ -121,7 +121,7 @@ const ModifierModal = ({ isOpen, onClose, item, activeAddons, setActiveAddons, o
                         {HARDCODED_ADDONS.map(m => {
                             const active = activeAddons.find(x => x.id === m.id);
                             return (
-                                <button
+                                <button type="button"
                                     key={m.id}
                                     onClick={() => setActiveAddons(p => active ? p.filter(x => x.id !== m.id) : [...p, m])}
                                     className={`w-full flex justify-between items-center p-3 rounded-xl border transition-all duration-200 active:scale-[0.99] group ${active

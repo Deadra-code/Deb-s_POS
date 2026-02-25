@@ -421,7 +421,7 @@ const POS = ({ menu, refreshData, loading: menuLoading }) => {
                 onChange={(e) => setSearch(e.target.value)}
               />
               {search && (
-                <button
+                <button type="button"
                   onClick={() => setSearch('')}
                   className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
                 >
@@ -432,7 +432,7 @@ const POS = ({ menu, refreshData, loading: menuLoading }) => {
 
             <nav className="flex bg-white dark:bg-slate-900 p-1.5 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-x-auto w-full md:w-auto">
               {categories.map((c) => (
-                <button
+                <button type="button"
                   key={c}
                   onClick={() => {
                     haptics.tick();
@@ -531,7 +531,7 @@ const POS = ({ menu, refreshData, loading: menuLoading }) => {
             </h2>
             <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-lg">
               {['Dine In', 'Takeaway'].map((t) => (
-                <button
+                <button type="button"
                   key={t}
                   onClick={() => setTab(t)}
                   className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${

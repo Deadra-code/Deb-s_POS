@@ -15,6 +15,7 @@ const CheckoutModal = ({ isOpen, onClose, total, payMethod, setPayMethod, onChec
                         {['Tunai', 'QRIS', 'Dana'].map(m => (
                             <button
                                 key={m}
+                                type="button"
                                 onClick={() => setPayMethod(m)}
                                 className={`py-4 rounded-2xl border-2 font-black text-sm transition-all active:scale-90 ${payMethod === m ? 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-500 text-emerald-700 dark:text-emerald-400 shadow-lg shadow-emerald-500/20' : 'border-slate-100 dark:border-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
                             >
@@ -24,6 +25,7 @@ const CheckoutModal = ({ isOpen, onClose, total, payMethod, setPayMethod, onChec
                     </div>
                 </div>
                 <button
+                    type="button"
                     onClick={onCheckout}
                     disabled={loading}
                     className="w-full py-4.5 rounded-2xl font-black text-white bg-emerald-600 dark:bg-emerald-500 shadow-xl shadow-emerald-500/20 hover:bg-emerald-700 dark:hover:bg-emerald-600 flex justify-center items-center gap-3 mt-4 active:scale-[0.98] transition-all disabled:opacity-50 disabled:grayscale h-14"

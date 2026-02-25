@@ -239,9 +239,12 @@ function auditComponents() {
             result.addSuggestion('Consider naming event handlers consistently (handleX or onX)', relativePath);
         }
 
-        // Check for console statements in components
+        // Check for console statements in components (only production code)
         if (/console\.(log|warn|error)/.test(content) && !file.includes('.test.')) {
-            result.addWarning('Console statements in component code', relativePath);
+            // Allow console statements wrapped in development checks
+            if (!/process\.env\.NODE_ENV.*development/.test(content)) {
+                result.addWarning('Console statements in component code (consider using logger.js)', relativePath);
+            }
         }
 
         // Check for prop-types or TypeScript

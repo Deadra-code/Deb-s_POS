@@ -38,7 +38,7 @@ const SettingsModal = ({ isOpen, onClose }) => {
             onClose={onClose}
             title="Pengaturan Toko"
             footer={
-                <button
+                <button type="button"
                     onClick={save}
                     disabled={loading}
                     className="w-full bg-slate-900 dark:bg-emerald-600 dark:hover:bg-emerald-700 text-white py-4 rounded-2xl font-black shadow-xl active:scale-95 transition-all flex items-center justify-center gap-2 h-14"

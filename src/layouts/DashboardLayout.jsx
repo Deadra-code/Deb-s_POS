@@ -16,7 +16,7 @@ import { Toaster, useToast } from '../hooks';
 import { error } from '../utils/logger.js';
 
 const NavItem = ({ id, icon: Icon, label, view, setView }) => (
-  <button
+  <button type="button"
     onClick={() => setView(id)}
     className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all duration-200 active:scale-95 ${
       view === id
@@ -34,7 +34,7 @@ const NavItem = ({ id, icon: Icon, label, view, setView }) => (
 );
 
 const SidebarItem = ({ id, icon: Icon, label, view, setView }) => (
-  <button
+  <button type="button"
     onClick={() => setView(id)}
     className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 mb-1 active:scale-[0.98] ${
       view === id
@@ -187,7 +187,7 @@ const DashboardLayout = ({ view, setView, onLogout }) => {
             <NavItem id="HISTORY" icon={Clock} label="Riwayat" view={view} setView={setView} />
             <NavItem id="ANALYTICS" icon={BarChart3} label="Bisnis" view={view} setView={setView} />
             <NavItem id="KITCHEN" icon={ChefHat} label="Dapur" view={view} setView={setView} />
-            <button
+            <button type="button"
               onClick={onLogout}
               className="flex flex-col items-center gap-1 p-2 rounded-xl text-red-500 dark:text-red-400 transition-colors active:scale-95"
               aria-label="Keluar"

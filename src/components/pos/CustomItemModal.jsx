@@ -29,7 +29,7 @@ const CustomItemModal = ({ isOpen, onClose, customItem, setCustomItem, onAdd }) 
                     <label className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block">Pemilik Keuntungan</label>
                     <div className="grid grid-cols-2 gap-3">
                         {['Debby', 'Mama'].map(m => (
-                            <button
+                            <button type="button"
                                 key={m}
                                 onClick={() => setCustomItem({ ...customItem, milik: m })}
                                 className={`py-4 rounded-2xl border-2 font-black text-sm transition-all active:scale-95 ${customItem.milik === m ? 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-500 text-emerald-700 dark:text-emerald-400 shadow-lg shadow-emerald-500/10' : 'bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800 text-slate-400 dark:text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
@@ -39,7 +39,7 @@ const CustomItemModal = ({ isOpen, onClose, customItem, setCustomItem, onAdd }) 
                         ))}
                     </div>
                 </div>
-                <button
+                <button type="button"
                     onClick={onAdd}
                     className="w-full py-4.5 bg-emerald-600 dark:bg-emerald-500 text-white rounded-2xl font-black shadow-xl shadow-emerald-500/20 hover:bg-emerald-700 dark:hover:bg-emerald-600 mt-6 active:scale-[0.98] transition-all flex items-center justify-center gap-2 h-14"
                 >

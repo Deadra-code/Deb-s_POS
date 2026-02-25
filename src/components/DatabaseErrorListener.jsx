@@ -13,18 +13,13 @@ const DatabaseErrorListener = () => {
   useEffect(() => {
     const unsubscribe = subscribeToDbErrors((operation, errorMessage) => {
       const userMessage = getErrorMessage(operation);
-      
+
       toast({
         title: 'Terjadi Kesalahan',
         description: `${userMessage}. Silakan coba lagi.`,
         variant: 'destructive',
         duration: 5000,
       });
-
-      // Log to console in development
-      if (process.env.NODE_ENV === 'development') {
-        console.error(`[DB Error] ${operation}: ${errorMessage}`);
-      }
     });
 
     return () => unsubscribe();

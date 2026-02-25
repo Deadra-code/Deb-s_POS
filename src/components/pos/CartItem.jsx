@@ -75,6 +75,7 @@ const CartItem = ({ item, onUpdateQty }) => {
                 <div className="flex items-center gap-3">
                     <div className="flex items-center bg-slate-100 dark:bg-slate-800 rounded-xl p-0.5 shadow-inner h-11 overflow-hidden" onPointerDown={(e) => e.stopPropagation()}>
                         <button
+                            type="button"
                             onClick={() => handleUpdate(-1)}
                             className="w-10 h-10 flex items-center justify-center text-slate-500 hover:text-red-500 dark:text-slate-400 dark:hover:text-red-400 transition-colors"
                             aria-label="Kurangi jumlah"
@@ -83,6 +84,7 @@ const CartItem = ({ item, onUpdateQty }) => {
                         </button>
                         <span className="w-6 text-center text-sm font-black text-slate-800 dark:text-slate-100">{item.qty}</span>
                         <button
+                            type="button"
                             onClick={() => handleUpdate(1)}
                             className="w-10 h-10 flex items-center justify-center text-slate-500 hover:text-emerald-500 dark:text-slate-400 dark:hover:text-emerald-400 transition-colors"
                             aria-label="Tambah jumlah"

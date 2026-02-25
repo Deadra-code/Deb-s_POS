@@ -12,7 +12,10 @@ class ErrorBoundary extends React.Component {
     }
 
     componentDidCatch(error, errorInfo) {
-        console.error("Uncaught error:", error, errorInfo);
+        // Error logged for debugging in development
+        if (process.env.NODE_ENV === 'development') {
+            console.error("Uncaught error:", error, errorInfo);
+        }
     }
 
     render() {
