@@ -91,5 +91,25 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: './src/tests/setup.jsx',
     exclude: ['**/node_modules/**', '**/dist/**', '**/e2e/**', '**/.{idea,git,cache,output,temp}/**'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html', 'json-summary'],
+      reportsDirectory: './coverage',
+      include: ['src/**/*.{js,jsx}'],
+      exclude: [
+        'src/tests/**',
+        'src/**/*.test.{js,jsx}',
+        'src/**/*.spec.{js,jsx}',
+        'src/components/ui/icons.js',
+      ],
+      thresholds: {
+        global: {
+          statements: 60,
+          branches: 50,
+          functions: 60,
+          lines: 60,
+        },
+      },
+    },
   },
 })
