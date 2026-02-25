@@ -1,0 +1,22 @@
+{
+  "timestamp": "2026-02-25T15-01-52-138Z",
+  "results": [
+    {
+      "category": "UI/UX",
+      "score": 0,
+      "passed": false,
+      "errors": 3,
+      "warnings": 17,
+      "suggestions": 5
+    },
+    {
+      "category": "Components",
+      "score": 25,
+      "passed": false,
+      "errors": 1,
+      "warnings": 11,
+      "suggestions": 37
+    }
+  ],
+  "averageScore": 12.5
+}

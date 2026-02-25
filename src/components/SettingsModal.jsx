@@ -1,21 +1,35 @@
 import { useState, useEffect } from 'react';
 import { fetchData } from '../services/api';
+import { useToast } from '../hooks';
 import Modal from '../components/ui/Modal';
 import Icon from './ui/Icon';
 
 const SettingsModal = ({ isOpen, onClose }) => {
+    const { toast } = useToast();
     const [config, setConfig] = useState({});
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        if (isOpen) fetchData('getSettings').then(setConfig);
-    }, [isOpen]);
+        if (isOpen) {
+            fetchData('getSettings')
+                .then(setConfig)
+                .catch(() => {
+                    toast({ title: 'Gagal memuat pengaturan', variant: 'destructive' });
+                });
+        }
+    }, [isOpen, toast]);
 
-    const save = () => {
+    const save = async () => {
         setLoading(true);
-        fetchData('saveSettings', 'POST', config).then(() => {
-            setLoading(false); onClose();
-        });
+        try {
+            await fetchData('saveSettings', 'POST', config);
+            toast({ title: 'Pengaturan berhasil disimpan', variant: 'success' });
+            onClose();
+        } catch {
+            toast({ title: 'Gagal menyimpan pengaturan', variant: 'destructive' });
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (

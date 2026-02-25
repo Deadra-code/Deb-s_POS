@@ -28,6 +28,7 @@ class ErrorBoundary extends React.Component {
                             Terjadi kesalahan tak terduga dalam aplikasi. Silakan coba segarkan halaman atau hubungi pengembang.
                         </p>
                         <button
+                            type="button"
                             onClick={() => window.location.reload()}
                             className="w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-600 text-white font-bold py-3 px-6 rounded-xl transition-all active:scale-95 shadow-lg shadow-emerald-500/20"
                         >

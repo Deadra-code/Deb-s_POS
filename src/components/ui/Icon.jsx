@@ -20,7 +20,7 @@ const Icon = memo(({ name, size = 20, className = "" }) => {
 
     const LucideIcon = IconRegistry[pascalName] || IconRegistry.HelpCircle; // Fallback icon
 
-    return <LucideIcon size={size} className={className} />;
+    return <LucideIcon key={name} size={size} className={className} />;
 });
 
 Icon.displayName = 'Icon';

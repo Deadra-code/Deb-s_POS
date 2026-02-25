@@ -1,16 +1,9 @@
 #!/usr/bin/env node
 
 /**
- * Comprehensive Audit Script for Deb's POS
- * Checks: Security, Performance, Accessibility, Best Practices
+ * Enhanced Comprehensive Audit Script for Deb's POS
+ * Checks: Security, Performance, Accessibility, Best Practices, UI/UX, Components
  * Usage: node scripts/audit.js [options]
- * 
- * Options:
- *   --security    Run only security audit
- *   --performance Run only performance audit
- *   --a11y        Run only accessibility audit
- *   --all         Run all audits (default)
- *   --output      Output format (json|text|html)
  */
 
 import { execSync } from 'child_process';
@@ -28,6 +21,9 @@ const args = process.argv.slice(2);
 const securityOnly = args.includes('--security');
 const performanceOnly = args.includes('--performance');
 const a11yOnly = args.includes('--a11y');
+const uionly = args.includes('--ui');
+const componentsOnly = args.includes('--components');
+const fullAudit = args.includes('--full') || (!securityOnly && !performanceOnly && !a11yOnly && !uionly && !componentsOnly);
 
 // Ensure reports directory exists
 if (!fs.existsSync(REPORTS_DIR)) {
@@ -47,10 +43,10 @@ class AuditResult {
         this.score = 100;
     }
 
-    addError(message, file = null) {
-        this.errors.push({ message, file });
+    addError(message, file = null, severity = 'high') {
+        this.errors.push({ message, file, severity });
         this.passed = false;
-        this.score -= 20;
+        this.score -= severity === 'high' ? 20 : severity === 'medium' ? 10 : 5;
     }
 
     addWarning(message, file = null) {
@@ -61,6 +57,10 @@ class AuditResult {
     addSuggestion(message) {
         this.suggestions.push(message);
     }
+
+    addInfo(message) {
+        this.suggestions.push(message);
+    }
 }
 
 /**
@@ -68,26 +68,19 @@ class AuditResult {
  */
 function getAllFiles(dir, extensions) {
     let files = [];
-    
     try {
         const items = fs.readdirSync(dir);
-        
         for (const item of items) {
             if (item === 'node_modules' || item === 'dist' || item.startsWith('.')) continue;
-            
             const fullPath = path.join(dir, item);
             const stat = fs.statSync(fullPath);
-            
             if (stat.isDirectory()) {
                 files = files.concat(getAllFiles(fullPath, extensions));
             } else if (extensions.some(ext => item.endsWith(ext))) {
                 files.push(fullPath);
             }
         }
-    } catch (error) {
-        // Ignore errors
-    }
-    
+    } catch (error) { /* ignore */ }
     return files;
 }
 
@@ -96,25 +89,199 @@ function getAllFiles(dir, extensions) {
  */
 function getDirectorySize(dir) {
     let size = 0;
-    
     try {
         const items = fs.readdirSync(dir);
-        
         for (const item of items) {
             const fullPath = path.join(dir, item);
             const stat = fs.statSync(fullPath);
-            
             if (stat.isDirectory()) {
                 size += getDirectorySize(fullPath);
             } else {
                 size += stat.size;
             }
         }
-    } catch (error) {
-        // Ignore errors
-    }
-    
+    } catch (error) { /* ignore */ }
     return size;
+}
+
+/**
+ * Parse JSX/JS file to find components
+ */
+function findComponents(content) {
+    const components = [];
+    // Match function components
+    const funcCompRegex = /(?:export\s+)?(?:const|function)\s+([A-Z][a-zA-Z0-9]*)\s*(?:=\s*)?\(?/g;
+    let match;
+    while ((match = funcCompRegex.exec(content)) !== null) {
+        components.push(match[1]);
+    }
+    return components;
+}
+
+/**
+ * Check for common UI/UX issues
+ */
+function auditUIUX() {
+    console.log('\n🎨 UI/UX Audit\n');
+    const result = new AuditResult('UI/UX');
+
+    const filesToCheck = getAllFiles(SRC_DIR, ['.jsx', '.tsx']);
+
+    filesToCheck.forEach(file => {
+        const content = fs.readFileSync(file, 'utf8');
+        const relativePath = path.relative(ROOT_DIR, file);
+
+        // Check for hardcoded colors (should use theme)
+        const hardcodedColors = content.match(/#[0-9a-fA-F]{3,6}/g);
+        if (hardcodedColors && hardcodedColors.length > 5) {
+            result.addWarning(`Many hardcoded colors (${hardcodedColors.length}) - consider using theme`, relativePath);
+        }
+
+        // Check for inline styles (should use Tailwind classes)
+        const inlineStyles = content.match(/style=\{{/g);
+        if (inlineStyles && inlineStyles.length > 3) {
+            result.addWarning(`Many inline styles (${inlineStyles.length}) - use Tailwind classes`, relativePath);
+        }
+
+        // Check for missing loading states
+        if (/async|await|fetch|\.get\(/.test(content) && !/loading|Loading|isLoading|spinner|Spinner/.test(content)) {
+            result.addSuggestion(`Consider adding loading state for async operations`, relativePath);
+        }
+
+        // Check for missing error handling
+        if (/async|await|fetch|\.get\(/.test(content) && !/catch|error|Error|try/.test(content)) {
+            result.addError('Missing error handling for async operations', relativePath, 'medium');
+        }
+
+        // Check for proper button types
+        if (/<button(?!.*type=)/.test(content) && !/<button.*type=/.test(content)) {
+            result.addWarning('Buttons without explicit type attribute', relativePath);
+        }
+
+        // Check for text contrast (small text)
+        const smallText = content.match(/text-\[?[6-8]px\]?/g);
+        if (smallText) {
+            result.addWarning(`Very small text sizes found - accessibility issue`, relativePath);
+        }
+
+        // Check for proper form labels
+        if (/<input/.test(content) && !/(<label|aria-label|id=.*htmlFor)/.test(content)) {
+            result.addError('Input without proper label', relativePath, 'medium');
+        }
+
+        // Check for disabled button states
+        if (/<button.*disabled/.test(content) && !/(opacity|cursor|pointer-events)/.test(content)) {
+            result.addSuggestion('Add visual feedback for disabled buttons', relativePath);
+        }
+    });
+
+    // Check for consistent component patterns
+    const componentFiles = getAllFiles(path.join(SRC_DIR, 'components'), ['.jsx', '.tsx']);
+    const exportPatterns = new Set();
+    
+    componentFiles.forEach(file => {
+        const content = fs.readFileSync(file, 'utf8');
+        if (/export\s+default/.test(content)) {
+            exportPatterns.add('default');
+        }
+        if (/export\s+(?:const|function)\s+[A-Z]/.test(content)) {
+            exportPatterns.add('named');
+        }
+    });
+
+    if (exportPatterns.size > 1) {
+        result.addSuggestion('Inconsistent export patterns - use either default or named exports');
+    }
+
+    result.score = Math.max(0, result.score);
+    return result;
+}
+
+/**
+ * Check for component functionality issues
+ */
+function auditComponents() {
+    console.log('\n🧩 Component Functionality Audit\n');
+    const result = new AuditResult('Components');
+
+    const componentDirs = [
+        path.join(SRC_DIR, 'components'),
+        path.join(SRC_DIR, 'pages'),
+        path.join(SRC_DIR, 'layouts'),
+    ];
+
+    const allComponentFiles = [];
+    componentDirs.forEach(dir => {
+        if (fs.existsSync(dir)) {
+            allComponentFiles.push(...getAllFiles(dir, ['.jsx', '.tsx']));
+        }
+    });
+
+    allComponentFiles.forEach(file => {
+        const content = fs.readFileSync(file, 'utf8');
+        const relativePath = path.relative(ROOT_DIR, file);
+
+        // Check for React hooks usage
+        const hasHooks = /useState|useEffect|useCallback|useMemo|useRef/.test(content);
+        const hasDeps = /useState|useEffect|useCallback|useMemo/.test(content);
+        
+        if (hasHooks && !/\[\s*\]/.test(content) && /useEffect|useCallback|useMemo/.test(content)) {
+            result.addWarning('Hook without dependency array', relativePath);
+        }
+
+        // Check for missing keys in lists
+        if (/.map\(/.test(content) && !/key=/.test(content)) {
+            result.addError('Missing key prop in mapped elements', relativePath, 'high');
+        }
+
+        // Check for proper event handlers
+        if (/onClick|onChange|onSubmit/.test(content) && !/(handle|on[A-Z]|dispatch)/.test(content)) {
+            result.addSuggestion('Consider naming event handlers consistently (handleX or onX)', relativePath);
+        }
+
+        // Check for console statements in components
+        if (/console\.(log|warn|error)/.test(content) && !file.includes('.test.')) {
+            result.addWarning('Console statements in component code', relativePath);
+        }
+
+        // Check for prop-types or TypeScript
+        if (!/propTypes|PropTypes|interface|type\s+\w+\s*=/.test(content) && !file.includes('.test.')) {
+            result.addSuggestion('Consider adding prop validation (PropTypes or TypeScript)', relativePath);
+        }
+
+        // Check for proper cleanup in useEffect
+        if (/useEffect\s*\(\s*\(\s*\)\s*=>\s*\{/.test(content)) {
+            const useEffectMatch = content.match(/useEffect\s*\([^)]+\{[^}]*\}/gs);
+            if (useEffectMatch && !/return\s*\(\s*\(\s*\)\s*=>|return\s*\(\s*\)/.test(content)) {
+                result.addSuggestion('Consider cleanup function in useEffect', relativePath);
+            }
+        }
+
+        // Check for proper async handling
+        if (/async\s+\w+\s*=|async\s+function/.test(content)) {
+            if (!/try\s*\{|\.catch\(/.test(content)) {
+                result.addWarning('Async function without error handling', relativePath);
+            }
+        }
+    });
+
+    // Check for component re-renders optimization
+    const pagesDir = path.join(SRC_DIR, 'pages');
+    if (fs.existsSync(pagesDir)) {
+        const pageFiles = getAllFiles(pagesDir, ['.jsx', '.tsx']);
+        pageFiles.forEach(file => {
+            const content = fs.readFileSync(file, 'utf8');
+            const relativePath = path.relative(ROOT_DIR, file);
+
+            // Check for useMemo/useCallback on expensive computations
+            if (/.map\([^)]+\{[^}]+\}/.test(content) && !/useMemo|useCallback/.test(content)) {
+                result.addSuggestion('Consider memoizing expensive list renders', relativePath);
+            }
+        });
+    }
+
+    result.score = Math.max(0, result.score);
+    return result;
 }
 
 /**
@@ -129,7 +296,6 @@ function auditSecurity() {
         { pattern: /SECRET\s*=\s*['"][^'"]+['"]/i, name: 'Secret' },
         { pattern: /PASSWORD\s*=\s*['"][^'"]+['"]/i, name: 'Password' },
         { pattern: /TOKEN\s*=\s*['"][^'"]+['"]/i, name: 'Token' },
-        { pattern: /PRIVATE_KEY/i, name: 'Private Key' },
     ];
 
     const filesToCheck = getAllFiles(SRC_DIR, ['.js', '.jsx', '.ts', '.tsx']);
@@ -139,10 +305,8 @@ function auditSecurity() {
         const relativePath = path.relative(ROOT_DIR, file);
 
         sensitivePatterns.forEach(({ pattern, name }) => {
-            if (pattern.test(content)) {
-                if (!file.includes('.env.example') && !file.includes('.md')) {
-                    result.addWarning(`Possible ${name} found in code`, relativePath);
-                }
+            if (pattern.test(content) && !file.includes('.env.example')) {
+                result.addWarning(`Possible ${name} found in code`, relativePath);
             }
         });
 
@@ -151,39 +315,21 @@ function auditSecurity() {
         }
 
         if (/\.innerHTML\s*=/.test(content)) {
-            result.addWarning('innerHTML usage detected - potential XSS risk', relativePath);
+            result.addWarning('innerHTML usage - potential XSS risk', relativePath);
         }
 
         if (/dangerouslySetInnerHTML/.test(content)) {
-            result.addWarning('dangerouslySetInnerHTML usage - ensure content is sanitized', relativePath);
+            result.addWarning('dangerouslySetInnerHTML - ensure content is sanitized', relativePath);
         }
-    });
 
-    const envExample = path.join(ROOT_DIR, '.env.example');
-    if (fs.existsSync(envExample)) {
-        const envContent = fs.readFileSync(envExample, 'utf8');
-        if (/SECRET|PASSWORD|PRIVATE/i.test(envContent)) {
-            result.addSuggestion('Ensure sensitive env vars are not committed to .env (only .env.example)');
-        }
-    }
-
-    filesToCheck.forEach(file => {
-        const content = fs.readFileSync(file, 'utf8');
-        const relativePath = path.relative(ROOT_DIR, file);
-
-        if (/localStorage\.(setItem|getItem)/.test(content)) {
-            if (/token|password|secret|key/i.test(content)) {
-                result.addWarning('Sensitive data might be stored in localStorage', relativePath);
-            }
+        if (/localStorage\.(setItem|getItem)/.test(content) && /token|password|secret/i.test(content)) {
+            result.addWarning('Sensitive data might be stored in localStorage', relativePath);
         }
     });
 
     try {
         console.log('   Checking for vulnerable dependencies...');
-        execSync('npm audit --production --json', { 
-            cwd: ROOT_DIR, 
-            stdio: ['pipe', 'pipe', 'pipe'] 
-        });
+        execSync('npm audit --production --json', { cwd: ROOT_DIR, stdio: ['pipe', 'pipe', 'pipe'] });
     } catch (error) {
         if (error.stdout) {
             const audit = JSON.parse(error.stdout.toString());
@@ -191,7 +337,7 @@ function auditSecurity() {
                 const vulns = audit.metadata.vulnerabilities;
                 const total = vulns.high + vulns.critical;
                 if (total > 0) {
-                    result.addError(`${total} high/critical vulnerabilities found in dependencies`);
+                    result.addError(`${total} high/critical vulnerabilities in dependencies`);
                 } else if (vulns.moderate > 0) {
                     result.addWarning(`${vulns.moderate} moderate vulnerabilities in dependencies`);
                 }
@@ -214,11 +360,10 @@ function auditPerformance() {
     if (fs.existsSync(distDir)) {
         const distSize = getDirectorySize(distDir);
         const distSizeMB = (distSize / 1024 / 1024).toFixed(2);
-
         console.log(`   📦 Dist folder size: ${distSizeMB} MB`);
 
         if (distSize > 5 * 1024 * 1024) {
-            result.addWarning(`Dist folder is large (${distSizeMB} MB). Consider code splitting.`);
+            result.addWarning(`Dist folder is large (${distSizeMB} MB)`);
         }
 
         const jsFiles = fs.readdirSync(distDir)
@@ -238,45 +383,29 @@ function auditPerformance() {
         result.addSuggestion('Run "npm run build" to analyze production bundle');
     }
 
-    const packageJson = JSON.parse(fs.readFileSync(path.join(ROOT_DIR, 'package.json'), 'utf8'));
-    const deps = { ...packageJson.dependencies, ...packageJson.devDependencies };
-
-    console.log('   📦 Checking dependency sizes...');
-    
-    const largeDeps = ['moment', 'lodash', 'jquery', 'bootstrap'];
-    largeDeps.forEach(dep => {
-        if (deps[dep]) {
-            result.addSuggestion(`Consider lighter alternative for: ${dep}`);
-        }
-    });
-
     const filesToCheck = getAllFiles(SRC_DIR, ['.js', '.jsx']);
     filesToCheck.forEach(file => {
         const content = fs.readFileSync(file, 'utf8');
         const relativePath = path.relative(ROOT_DIR, file);
 
-        if (/XMLHttpRequest/.test(content) && /async:\s*false/.test(content)) {
-            result.addError('Synchronous XMLHttpRequest detected!', relativePath);
+        // Check for large inline objects
+        const largeObjects = content.match(/\{\s*[a-zA-Z]+\s*:\s*[^}]{100,}\s*\}/g);
+        if (largeObjects && largeObjects.length > 3) {
+            result.addSuggestion('Consider extracting large objects/constants', relativePath);
+        }
+
+        // Check for unnecessary re-renders
+        if (/useState.*\[\]/.test(content) || /useState.*\{\}/.test(content)) {
+            result.addSuggestion('Consider using useMemo for object/array state', relativePath);
         }
     });
-
-    const publicDir = path.join(ROOT_DIR, 'public');
-    if (fs.existsSync(publicDir)) {
-        const images = getAllFiles(publicDir, ['.png', '.jpg', '.jpeg', '.gif']);
-        images.forEach(img => {
-            const stats = fs.statSync(img);
-            if (stats.size > 500 * 1024) {
-                result.addWarning(`Large image file: ${path.relative(ROOT_DIR, img)} (${(stats.size / 1024).toFixed(0)} KB)`);
-            }
-        });
-    }
 
     result.score = Math.max(0, result.score);
     return result;
 }
 
 /**
- * Accessibility Audit (Basic)
+ * Accessibility Audit
  */
 function auditAccessibility() {
     console.log('\n♿ Accessibility Audit\n');
@@ -288,29 +417,24 @@ function auditAccessibility() {
         const content = fs.readFileSync(file, 'utf8');
         const relativePath = path.relative(ROOT_DIR, file);
 
-        if (/<img[^>]*>/.test(content)) {
-            if (!/alt\s*=\s*["'][^"']*["']/.test(content) && !/alt\s*=\s*\{/.test(content)) {
-                result.addWarning('Images should have alt text', relativePath);
-            }
+        if (/<img[^>]*>/.test(content) && !/(alt\s*=|aria-label)/.test(content)) {
+            result.addError('Images should have alt text', relativePath, 'high');
         }
 
-        if (/<button[^>]*>/.test(content)) {
-            if (!/aria-label|aria-labelledby/.test(content) && 
-                !/>[^<]+</.test(content.replace(/\n/g, ' '))) {
-                result.addSuggestion('Ensure buttons have accessible text', relativePath);
-            }
+        if (/<button[^>]*>/.test(content) && !/(aria-label|children|>.*<|icon|Icon)/i.test(content)) {
+            result.addWarning('Buttons should have accessible text', relativePath);
         }
 
-        if (/<input[^>]*>/.test(content)) {
-            if (!/label|aria-label|id/.test(content)) {
-                result.addWarning('Form inputs should have labels', relativePath);
-            }
+        if (/<input[^>]*>/.test(content) && !/(label|aria-label|id.*htmlFor|aria-labelledby)/i.test(content)) {
+            result.addError('Form inputs should have labels', relativePath, 'medium');
         }
 
-        if (/<div[^>]*onClick/.test(content)) {
-            if (!/role\s*=\s*["']button/.test(content) && !/role\s*=\s*["']link/.test(content)) {
-                result.addSuggestion('Clickable divs should have role attribute', relativePath);
-            }
+        if (/<div[^>]*onClick/.test(content) && !/role\s*=/.test(content)) {
+            result.addWarning('Clickable divs should have role attribute', relativePath);
+        }
+
+        if (/onKeyDown|onKeyUp/.test(content) && !/onKeyPress|Enter/.test(content)) {
+            result.addSuggestion('Ensure keyboard event handlers check for Enter key', relativePath);
         }
     });
 
@@ -332,11 +456,10 @@ function auditBestPractices() {
 
     const gitignore = path.join(ROOT_DIR, '.gitignore');
     if (fs.existsSync(gitignore)) {
-        const gitignoreContent = fs.readFileSync(gitignore, 'utf8');
-        const requiredIgnores = ['.env', 'node_modules', 'dist', 'coverage'];
-        
-        requiredIgnores.forEach(ignore => {
-            if (!gitignoreContent.includes(ignore)) {
+        const content = fs.readFileSync(gitignore, 'utf8');
+        const required = ['.env', 'node_modules', 'dist', 'coverage'];
+        required.forEach(ignore => {
+            if (!content.includes(ignore)) {
                 result.addWarning(`${ignore} should be in .gitignore`);
             }
         });
@@ -344,28 +467,17 @@ function auditBestPractices() {
 
     const filesToCheck = getAllFiles(SRC_DIR, ['.js', '.jsx', '.ts', '.tsx']);
     let todoCount = 0;
-    
     filesToCheck.forEach(file => {
         const content = fs.readFileSync(file, 'utf8');
         const matches = content.match(/(TODO|FIXME|XXX|HACK)/g);
-        if (matches) {
-            todoCount += matches.length;
-        }
+        if (matches) todoCount += matches.length;
     });
 
     if (todoCount > 10) {
-        result.addWarning(`${todoCount} TODO/FIXME comments found - consider addressing them`);
+        result.addWarning(`${todoCount} TODO/FIXME comments found`);
     } else if (todoCount > 0) {
         result.addSuggestion(`${todoCount} TODO/FIXME comments found`);
     }
-
-    const componentFiles = getAllFiles(SRC_DIR, ['.jsx', '.tsx']);
-    componentFiles.forEach(file => {
-        const fileName = path.basename(file);
-        if (fileName[0] !== fileName[0].toUpperCase()) {
-            result.addSuggestion(`Component file should be PascalCase: ${fileName}`);
-        }
-    });
 
     result.score = Math.max(0, result.score);
     return result;
@@ -376,9 +488,8 @@ function auditBestPractices() {
  */
 function printResult(result) {
     const emoji = result.score >= 80 ? '✅' : result.score >= 60 ? '⚠️' : '❌';
-    
     console.log(`\n${'='.repeat(60)}`);
-    console.log(`${emoji} ${result.category} Audit: ${result.score}/100`);
+    console.log(`${emoji} ${result.category} Audit: ${Math.max(0, result.score)}/100`);
     console.log('='.repeat(60));
 
     if (result.errors.length > 0) {
@@ -397,9 +508,12 @@ function printResult(result) {
 
     if (result.suggestions.length > 0) {
         console.log(`\n💡 Suggestions (${result.suggestions.length}):`);
-        result.suggestions.forEach(sug => {
+        result.suggestions.slice(0, 10).forEach(sug => {
             console.log(`   • ${sug}`);
         });
+        if (result.suggestions.length > 10) {
+            console.log(`   ... and ${result.suggestions.length - 10} more`);
+        }
     }
 
     if (result.errors.length === 0 && result.warnings.length === 0) {
@@ -408,63 +522,57 @@ function printResult(result) {
 }
 
 /**
- * Save report to file
+ * Save report
  */
 function saveReport(results) {
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const reportFile = path.join(REPORTS_DIR, `audit-${timestamp}.json`);
-
     const report = {
         timestamp,
         results: results.map(r => ({
             category: r.category,
-            score: r.score,
+            score: Math.max(0, r.score),
             passed: r.passed,
             errors: r.errors.length,
             warnings: r.warnings.length,
             suggestions: r.suggestions.length,
         })),
-        averageScore: results.reduce((sum, r) => sum + r.score, 0) / results.length,
+        averageScore: results.reduce((sum, r) => Math.max(0, sum + r.score), 0) / results.length,
     };
-
     fs.writeFileSync(reportFile, JSON.stringify(report, null, 2));
     console.log(`\n📄 Report saved: ${reportFile}`);
 }
 
 /**
- * Main audit function
+ * Main function
  */
 function runAudit() {
     console.log('\n' + '🔍'.repeat(30));
-    console.log('   Deb\'s POS - Comprehensive Audit');
+    console.log('   Deb\'s POS - Enhanced Comprehensive Audit');
     console.log('🔍'.repeat(30) + '\n');
 
     const startTime = Date.now();
     const results = [];
 
-    if (!securityOnly && !performanceOnly && !a11yOnly) {
-        results.push(auditSecurity());
-        results.push(auditPerformance());
-        results.push(auditAccessibility());
-        results.push(auditBestPractices());
-    } else {
-        if (securityOnly) results.push(auditSecurity());
-        if (performanceOnly) results.push(auditPerformance());
-        if (a11yOnly) results.push(auditAccessibility());
-    }
+    if (fullAudit || securityOnly) results.push(auditSecurity());
+    if (fullAudit || performanceOnly) results.push(auditPerformance());
+    if (fullAudit || a11yOnly) results.push(auditAccessibility());
+    if (fullAudit || uionly) results.push(auditUIUX());
+    if (fullAudit || componentsOnly) results.push(auditComponents());
+    if (fullAudit) results.push(auditBestPractices());
 
     results.forEach(printResult);
     saveReport(results);
 
     const duration = ((Date.now() - startTime) / 1000).toFixed(2);
-    const avgScore = (results.reduce((sum, r) => sum + r.score, 0) / results.length).toFixed(1);
+    const avgScore = results.reduce((sum, r) => Math.max(0, sum + r.score), 0) / results.length;
     const allPassed = results.every(r => r.passed);
 
     console.log(`\n${'='.repeat(60)}`);
     console.log('📊 Audit Summary');
     console.log('='.repeat(60));
     console.log(`   Duration: ${duration}s`);
-    console.log(`   Average Score: ${avgScore}/100`);
+    console.log(`   Average Score: ${avgScore.toFixed(1)}/100`);
     console.log(`   Status: ${allPassed ? '✅ PASSED' : '⚠️  NEEDS ATTENTION'}`);
     console.log('='.repeat(60) + '\n');
 

@@ -1,0 +1,38 @@
+{
+  "timestamp": "2026-02-25T14-47-57-370Z",
+  "results": [
+    {
+      "category": "Security",
+      "score": 80,
+      "passed": true,
+      "errors": 0,
+      "warnings": 4,
+      "suggestions": 0
+    },
+    {
+      "category": "Performance",
+      "score": 100,
+      "passed": true,
+      "errors": 0,
+      "warnings": 0,
+      "suggestions": 0
+    },
+    {
+      "category": "Accessibility",
+      "score": 90,
+      "passed": true,
+      "errors": 0,
+      "warnings": 2,
+      "suggestions": 1
+    },
+    {
+      "category": "Best Practices",
+      "score": 90,
+      "passed": true,
+      "errors": 0,
+      "warnings": 2,
+      "suggestions": 3
+    }
+  ],
+  "averageScore": 90
+}
