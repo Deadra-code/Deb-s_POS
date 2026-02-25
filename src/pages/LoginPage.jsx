@@ -20,7 +20,9 @@ const LoginPage = ({ onLogin }) => {
       try {
         await seedInitialData();
       } catch (err) {
-        console.error('Failed to initialize database:', err);
+        if (process.env.NODE_ENV === 'development') {
+            console.error('Failed to initialize database:', err);
+        }
       }
     };
     initDB();
@@ -69,7 +71,9 @@ const LoginPage = ({ onLogin }) => {
         setPasscode('');
       }
     } catch (err) {
-      console.error('Login error:', err);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Login error:', err);
+      }
       setError('Gagal login. Pastikan database terinisialisasi.');
     } finally {
       setLoading(false);

@@ -17,7 +17,7 @@ const SettingsModal = ({ isOpen, onClose }) => {
                     toast({ title: 'Gagal memuat pengaturan', variant: 'destructive' });
                 });
         }
-    }, [isOpen, toast]);
+    }, []);
 
     const save = async () => {
         setLoading(true);

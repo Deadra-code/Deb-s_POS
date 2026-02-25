@@ -155,7 +155,9 @@ const Analytics = ({ loading: parentLoading }) => {
         const report = await getSalesReport();
         setData(report);
       } catch (err) {
-        console.error('Failed to load sales report:', err);
+        if (process.env.NODE_ENV === 'development') {
+            console.error('Failed to load sales report:', err);
+        }
       } finally {
         setLocalLoading(false);
       }

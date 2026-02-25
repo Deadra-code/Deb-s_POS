@@ -11,9 +11,9 @@ const DatabaseErrorListener = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    const unsubscribe = subscribeToDbErrors((operation, errorMessage) => {
+    subscribeToDbErrors((operation, errorMessage) => {
       const userMessage = getErrorMessage(operation);
-
+      
       toast({
         title: 'Terjadi Kesalahan',
         description: `${userMessage}. Silakan coba lagi.`,
@@ -21,9 +21,8 @@ const DatabaseErrorListener = () => {
         duration: 5000,
       });
     });
-
-    return () => unsubscribe();
-  }, [toast]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return null;
 };

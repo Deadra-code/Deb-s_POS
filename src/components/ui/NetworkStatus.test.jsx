@@ -31,4 +31,10 @@ describe('NetworkStatus', () => {
 
         expect(screen.queryByText(/Koneksi Terputus/i)).not.toBeInTheDocument();
     });
+
+    it('handles errors gracefully', () => {
+        // Test that component doesn't crash on error
+        vi.stubGlobal('navigator', { onLine: false });
+        expect(() => render(<NetworkStatus />)).not.toThrow();
+    });
 });

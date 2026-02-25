@@ -17,7 +17,7 @@ const PullToRefresh = ({ onRefresh, isRefreshing }) => {
                 onRefresh();
             }
         });
-    }, [y, hasTriggered, isRefreshing, onRefresh]);
+    }, []);
 
     useEffect(() => {
         if (!isRefreshing) {

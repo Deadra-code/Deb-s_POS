@@ -254,7 +254,9 @@ const Inventory = ({ menu, refreshData, loading: parentLoading }) => {
       setModalOpen(false);
       refreshData();
     } catch (err) {
-      console.error(err);
+      if (process.env.NODE_ENV === 'development') {
+        console.error(err);
+      }
       toast({
         title: 'Gagal menyimpan produk',
         description: err.message,

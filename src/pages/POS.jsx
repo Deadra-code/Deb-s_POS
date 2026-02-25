@@ -259,7 +259,9 @@ const POS = ({ menu, refreshData, loading: menuLoading }) => {
         const items = await getTopItems(5);
         setTopItemNames(items);
       } catch (err) {
-        console.error('Failed to load top items:', err);
+        if (process.env.NODE_ENV === 'development') {
+            console.error('Failed to load top items:', err);
+        }
       }
     };
     loadTopItems();

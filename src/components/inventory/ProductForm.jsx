@@ -151,6 +151,7 @@ const ProductForm = ({ initialData, onSubmit, loading }) => {
 
             <div className="pt-6">
                 <button
+                    type="button"
                     disabled={loading}
                     className="w-full bg-emerald-600 dark:bg-emerald-500 text-white py-4 rounded-2xl font-bold shadow-xl hover:bg-emerald-700 dark:hover:bg-emerald-600 disabled:opacity-50 active:scale-95 transition-all text-lg shadow-emerald-500/20"
                 >

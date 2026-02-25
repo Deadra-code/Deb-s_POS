@@ -15,7 +15,9 @@ const Kitchen = () => {
                 try {
                     return { ...o, items: typeof o.Items_JSON === 'string' ? JSON.parse(o.Items_JSON) : o.Items_JSON || [] };
                 } catch (e) {
-                    console.error("Error parsing kitchen items", e);
+                    if (process.env.NODE_ENV === 'development') {
+                        console.error("Error parsing kitchen items", e);
+                    }
                     return { ...o, items: [] };
                 }
             }).filter(o => o.status !== 'Selesai' && o.Status !== 'Selesai');
