@@ -1,8 +1,24 @@
-# Documentation Index - Deb's POS Pro
+# Documentation Index - Deb's POS Pro v4
 
-> Complete documentation for Deb's POS Pro v3.15.1
+> **Offline-first Point of Sale system** - Complete documentation
 
-This folder contains all documentation for the Deb's POS project. Start here for quick navigation.
+---
+
+## 🚀 Quick Start
+
+### For New Users
+
+1. Read [README.md](../README.md) for overview
+2. Install dependencies: `npm install`
+3. Start dev server: `npm run dev`
+4. Login with passcode: `admin123`
+
+### For Developers
+
+1. Review [OFFLINE_MIGRATION.md](../OFFLINE_MIGRATION.md) for architecture
+2. Check [DATABASE.md](./DATABASE.md) for schema
+3. Read [COMPONENTS.md](./COMPONENTS.md) for UI guide
+4. See [TESTING.md](./TESTING.md) for testing
 
 ---
 
@@ -10,10 +26,11 @@ This folder contains all documentation for the Deb's POS project. Start here for
 
 | Document | Description |
 |----------|-------------|
-| [README.md](./README.md) | Project overview, features, and getting started |
-| [ARCHITECTURE.md](./ARCHITECTURE.md) | Technical architecture and project structure |
-| [RDP.md](./RDP.md) | Requirements Definition & Product Roadmap |
-| [CHECKLIST.md](./CHECKLIST.md) | Development task checklist by phase |
+| [README.md](../README.md) | Project overview & quick start |
+| [OFFLINE_MIGRATION.md](../OFFLINE_MIGRATION.md) | Migration guide from GAS to IndexedDB |
+| [MIGRATION_COMPLETE.md](../MIGRATION_COMPLETE.md) | Complete migration summary |
+| [ENVIRONMENT.md](./ENVIRONMENT.md) | Environment setup |
+| [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) | Common issues & solutions |
 
 ---
 
@@ -21,109 +38,218 @@ This folder contains all documentation for the Deb's POS project. Start here for
 
 | Document | Description |
 |----------|-------------|
-| [API.md](./API.md) | Complete API reference for backend endpoints |
-| [DATABASE.md](./DATABASE.md) | Database schema and Google Sheets structure |
-| [COMPONENTS.md](./COMPONENTS.md) | Frontend component guide and structure |
-| [ENVIRONMENT.md](./ENVIRONMENT.md) | Environment setup and configuration |
-| [DEPLOYMENT.md](./DEPLOYMENT.md) | Deployment guide for frontend and backend |
-| [TESTING.md](./TESTING.md) | Testing guide for unit, component, and E2E tests |
-| [SCRIPTS.md](./SCRIPTS.md) | Utility scripts reference |
-| [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) | Common issues and solutions |
-| **[GAS_CICD_SETUP.md](./GAS_CICD_SETUP.md)** | **🤖 Full CI/CD automation setup (NEW!)** |
-| **[CONSTRAINTS.md](./CONSTRAINTS.md)** | **⚠️ Larangan & anti-patterns (WAJIB BACA!)** |
+| [DATABASE.md](./DATABASE.md) | IndexedDB schema & structure |
+| [API.md](./API.md) | API reference (IndexedDB layer) |
+| [COMPONENTS.md](./COMPONENTS.md) | UI components guide (shadcn/ui) |
+| [TESTING.md](./TESTING.md) | Testing guide (Vitest + Playwright) |
+| [SCRIPTS.md](./SCRIPTS.md) | npm scripts reference |
 
 ---
 
-## 🤖 Skills & Automation
+## 📚 Deprecated Documentation
 
-| Document | Description |
-|----------|-------------|
-| [skills/stitch-skill.md](./skills/stitch-skill.md) | Stitch UI Generator skill documentation |
-| [skills/rational-audit-skill.md](./skills/rational-audit-skill.md) | Rational audit skill documentation |
+These docs are **outdated** and reference the old Google Apps Script backend:
 
----
+- ❌ ~~GAS_CICD_SETUP.md~~ - Removed
+- ❌ ~~BACKEND_DEPLOYMENT_TROUBLESHOOTING.md~~ - Removed
+- ❌ ~~DEPLOYMENT.md~~ - Removed (old GAS deployment)
+- ❌ ~~RDP.md~~ - Removed
+- ❌ ~~CHECKLIST.md~~ - Removed
 
-## 🚀 Quick Start
-
-### For New Developers
-
-1. Read [README.md](./README.md) for project overview
-2. Follow [ENVIRONMENT.md](./ENVIRONMENT.md) for setup
-3. Review [ARCHITECTURE.md](./ARCHITECTURE.md) for structure
-4. Check [CHECKLIST.md](./CHECKLIST.md) for current tasks
-
-### For Deployment
-
-1. Follow [DEPLOYMENT.md](./DEPLOYMENT.md) step-by-step
-2. Reference [API.md](./API.md) for backend setup
-3. Use [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) if issues occur
-
-### For Development
-
-1. Review [COMPONENTS.md](./COMPONENTS.md) for component structure
-2. Check [TESTING.md](./TESTING.md) for testing guidelines
-3. Use [SCRIPTS.md](./SCRIPTS.md) for utility commands
-4. Reference [DATABASE.md](./DATABASE.md) for schema info
+**Current architecture:** IndexedDB (offline-first), no backend server.
 
 ---
 
-## 📁 Project Structure
+## 🗄️ Database Architecture
+
+### IndexedDB Schema
 
 ```
-docs/
-├── INDEX.md                    # This file
-├── README.md                   # Project overview
-├── ARCHITECTURE.md             # Technical architecture
-├── RDP.md                      # Requirements & roadmap
-├── CHECKLIST.md                # Development checklist
-├── CONSTRAINTS.md              # ⚠️ LARANGAN & anti-patterns (WAJIB!)
-├── API.md                      # API reference
-├── DATABASE.md                 # Database schema
-├── COMPONENTS.md               # Component guide
-├── ENVIRONMENT.md              # Environment setup
-├── DEPLOYMENT.md               # Deployment guide
-├── TESTING.md                  # Testing guide
-├── SCRIPTS.md                  # Scripts reference
-├── TROUBLESHOOTING.md          # Troubleshooting guide
-└── skills/
-    ├── stitch-skill.md         # Stitch UI skill
-    └── rational-audit-skill.md # Rational audit skill
+debs-pos-db/
+├── products/       # Product catalog
+├── orders/         # Transaction history
+├── settings/       # App configuration
+└── users/          # User authentication
+```
+
+See [DATABASE.md](./DATABASE.md) for detailed schema.
+
+---
+
+## 🎨 UI Components
+
+### shadcn/ui Components
+
+| Component | File | Usage |
+|-----------|------|-------|
+| Button | `components/ui/Button.jsx` | All buttons |
+| Input | `components/ui/Input.jsx` | Form inputs |
+| Card | `components/ui/Card.jsx` | Cards/containers |
+| Dialog | `components/ui/Dialog.jsx` | Modals/popups |
+| Toast | `components/ui/Toast.jsx` | Notifications |
+| Badge | `components/ui/Badge.jsx` | Status indicators |
+| ScrollArea | `components/ui/ScrollArea.jsx` | Scrollable areas |
+
+See [COMPONENTS.md](./COMPONENTS.md) for usage examples.
+
+---
+
+## 📱 PWA Guide
+
+### Installation
+
+1. Open app in browser
+2. Click install icon (desktop) or "Add to Home Screen" (mobile)
+3. App installs as standalone PWA
+
+### Offline Support
+
+- ✅ Full offline functionality
+- ✅ Data stored in IndexedDB
+- ✅ Service worker caches assets
+- ⚠️ Manual backup required
+
+---
+
+## 🧪 Testing
+
+### Run Tests
+
+```bash
+# Unit tests
+npm run test
+
+# E2E tests
+npm run test:e2e
+
+# With coverage
+npm run test -- --coverage
+```
+
+### Test Coverage
+
+| Area | Tool | Status |
+|------|------|--------|
+| Unit | Vitest | ✅ Configured |
+| E2E | Playwright | ✅ Configured |
+| Components | Testing Library | ✅ Configured |
+
+See [TESTING.md](./TESTING.md) for details.
+
+---
+
+## 🔧 Development
+
+### Available Scripts
+
+```bash
+npm run dev          # Dev server (http://localhost:5173)
+npm run build        # Production build
+npm run preview      # Preview build
+npm run lint         # ESLint
+npm run test         # Unit tests
+npm run test:e2e     # E2E tests
+npm run backup       # Backup data
+```
+
+### Project Structure
+
+```
+src/
+├── components/
+│   ├── ui/              # shadcn/ui components
+│   ├── pos/             # POS-specific
+│   ├── inventory/       # Inventory-specific
+│   └── analytics/       # Analytics-specific
+├── pages/               # App pages
+├── layouts/             # Layout wrappers
+├── services/            # Database & API layer
+├── hooks/               # React hooks
+├── lib/                 # Utilities
+└── utils/               # Helper functions
 ```
 
 ---
 
-## 🔗 External Resources
+## 💾 Backup & Restore
 
-- [React Documentation](https://react.dev/)
-- [Vite Documentation](https://vitejs.dev/)
-- [Tailwind CSS](https://tailwindcss.com/)
-- [Google Apps Script](https://developers.google.com/apps-script)
-- [Playwright Testing](https://playwright.dev/)
-- [Vitest](https://vitest.dev/)
+### Backup
+
+```javascript
+import { backupData } from './services/indexeddb-api';
+
+const backup = await backupData();
+// Download as JSON file
+```
+
+### Restore
+
+```javascript
+import { restoreData } from './services/indexeddb-api';
+
+const file = event.target.files[0];
+const backup = JSON.parse(await file.text());
+await restoreData(backup);
+```
 
 ---
 
-## 📝 Contributing
+## ⚠️ Important Notes
 
-When adding new documentation:
-1. Create `.md` file in appropriate folder
-2. Add entry to this INDEX.md
-3. Update related documents if needed
-4. Run spell check before committing
+### Trade-offs
 
----
+| ✅ Advantages | ❌ Limitations |
+|--------------|----------------|
+| 100% offline | No sync between devices |
+| Fast (no network) | Data lost on browser clear |
+| Private (local) | Manual backup required |
+| Free (no server) | Single device only |
 
-## 📅 Last Updated
+### Browser Support
 
-**Date:** 2026-02-24  
-**Version:** 3.15.1  
-**Status:** Complete
+- ✅ Chrome/Edge (recommended)
+- ✅ Firefox
+- ✅ Safari
+- ✅ Mobile browsers
 
 ---
 
 ## 📞 Support
 
-For issues not covered in this documentation:
+### Troubleshooting
+
 1. Check [TROUBLESHOOTING.md](./TROUBLESHOOTING.md)
-2. Review existing GitHub issues
-3. Create new issue with detailed description
+2. Review browser console for errors
+3. Verify IndexedDB is enabled
+4. Clear cache and retry
+
+### Getting Help
+
+1. Review documentation (this folder)
+2. Check browser DevTools console
+3. Create GitHub issue with details
+
+---
+
+## 📅 Last Updated
+
+**Date:** 2026-02-25  
+**Version:** 4.0.0 (IndexedDB)  
+**Status:** Production Ready
+
+---
+
+## ✅ Source of Truth
+
+This `docs/` folder is the **single source of truth** for:
+- Database schema
+- API reference
+- Component documentation
+- Testing guidelines
+- Troubleshooting
+
+**External docs:** Deprecated (GAS-related docs removed)
+
+---
+
+**Built with ❤️ for Deb's Kitchen**

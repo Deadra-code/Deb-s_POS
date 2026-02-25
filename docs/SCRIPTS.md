@@ -2,6 +2,8 @@
 
 Utility scripts untuk development dan maintenance.
 
+---
+
 ## Available Scripts
 
 ### Development
@@ -15,178 +17,159 @@ npm run build
 
 # Preview production build
 npm run preview
-
-# Lint code
-npm run lint
 ```
 
 ---
 
-## Audit Scripts
-
-### Smart Audit (Comprehensive)
+## Testing
 
 ```bash
-npm run audit:smart
-```
-Audit cerdas untuk code quality dan best practices.
-
-### Security Audit
-
-```bash
-npm run audit:sec
-```
-Memeriksa kerentanan keamanan dan dependency vulnerabilities.
-
-### Performance Audit
-
-```bash
-npm run audit:perf
-```
-Analisis performa dan bottleneck potensial.
-
-### Modularity Audit
-
-```bash
-npm run audit:mod
-```
-Memeriksa modularitas dan coupling code.
-
-### Component Audit
-
-```bash
-npm run audit:comp
-```
-Audit komponen React untuk best practices.
-
-### UI Audit
-
-```bash
-npm run audit:ui
-```
-Memeriksa konsistensi UI dan accessibility.
-
-### Dependency Audit
-
-```bash
-npm run audit:deps
-```
-Cek outdated dan vulnerable dependencies.
-
----
-
-## Full Audit
-
-```bash
-npm run audit
-```
-
-Menjalankan semua audit secara berurutan:
-1. audit:smart
-2. audit:sec
-3. audit:perf
-4. audit:mod
-5. audit:comp
-6. audit:ui
-7. audit:deps
-
----
-
-## Deployment Scripts
-
-### CLASP Login
-
-```bash
-npm run clasp:login
-```
-Login ke Google Apps Script menggunakan CLASP.
-
-### Sync API URL
-
-```bash
-npm run sync-api-url
-```
-Sinkronisasi API URL antara environment dan backend.
-
-### Deploy Backend
-
-```bash
-npm run deploy:backend
-```
-Deploy code ke Google Apps Script menggunakan CLASP.
-
-### Smart Deploy
-
-```bash
-npm run deploy:smart
-```
-Deployment cerdas dengan pre-deployment checks.
-
----
-
-## Testing Scripts
-
-### Unit Tests
-
-```bash
+# Run unit tests
 npm run test
-```
-Jalankan unit tests dengan Vitest.
 
-### E2E Tests
+# Run E2E tests
+npm run test:e2e
+
+# Run tests with coverage
+npm run test -- --coverage
+
+# Run tests in watch mode
+npm run test -- --watch
+```
+
+---
+
+## Code Quality
 
 ```bash
-npm run test:e2e
-```
-Jalankan end-to-end tests dengan Playwright.
+# Run ESLint
+npm run lint
 
----
-
-## Script Locations
-
-```
-scripts/
-├── audit-components.cjs    # Component audit logic
-├── audit-deps.cjs          # Dependency audit logic
-├── audit-modularity.cjs    # Modularity audit logic
-├── audit-perf.cjs          # Performance audit logic
-├── audit-security.cjs      # Security audit logic
-├── audit-smart.cjs         # Smart/comprehensive audit
-├── audit-ui.cjs            # UI audit logic
-├── deploy-smart.cjs        # Smart deployment logic
-└── sync-api-url.cjs        # API URL sync logic
+# Fix ESLint errors
+npm run lint -- --fix
 ```
 
 ---
 
-## Creating Custom Scripts
+## Maintenance
 
-1. Buat file baru di `scripts/` folder
-2. Gunakan `.cjs` extension untuk CommonJS
-3. Tambahkan ke `package.json` scripts section
+```bash
+# Backup data (IndexedDB)
+npm run backup
+```
 
-### Example
+---
+
+## Script Descriptions
+
+### `npm run dev`
+
+Start Vite development server with hot module replacement.
+
+**Port:** 5173 (default)  
+**URL:** http://localhost:5173
+
+---
+
+### `npm run build`
+
+Build production bundle with Vite.
+
+**Output:** `dist/` folder  
+**Features:**
+- Minification
+- Code splitting
+- Tree shaking
+- PWA service worker generation
+
+---
+
+### `npm run preview`
+
+Preview production build locally.
+
+**Port:** 4173 (default)  
+**URL:** http://localhost:4173
+
+---
+
+### `npm run test`
+
+Run unit tests with Vitest.
+
+**Features:**
+- Fast execution
+- Hot module replacement
+- Coverage reports
+- Watch mode
+
+---
+
+### `npm run test:e2e`
+
+Run end-to-end tests with Playwright.
+
+**Browsers:** Chromium, Firefox, WebKit  
+**Reports:** `playwright-report/`
+
+---
+
+### `npm run lint`
+
+Run ESLint for code quality.
+
+**Config:** `eslint.config.js`  
+**Fix:** `npm run lint -- --fix`
+
+---
+
+### `npm run backup`
+
+Backup IndexedDB data to JSON file.
+
+**Output:** `debs-pos-backup-YYYY-MM-DD.json`
+
+---
+
+## Custom Scripts
+
+### Create Backup Script
 
 ```javascript
-// scripts/custom-audit.cjs
-const fs = require('fs');
-const path = require('path');
+// scripts/backup.js
+import { backupData } from '../src/services/indexeddb-api';
 
-function customAudit() {
-  console.log('Running custom audit...');
-  // Audit logic here
+async function backup() {
+  const data = await backupData();
+  console.log('Backup completed:', data);
 }
 
-customAudit();
+backup();
 ```
 
+Add to package.json:
 ```json
-// package.json
 {
   "scripts": {
-    "audit:custom": "node scripts/custom-audit.cjs"
+    "backup:custom": "node scripts/backup.js"
   }
 }
+```
+
+---
+
+## Environment Variables
+
+Scripts mungkin menggunakan environment variables dari `.env`:
+
+```env
+VITE_APP_NAME=Deb's POS Pro
+VITE_APP_VERSION=4.0.0
+```
+
+Access in code:
+```javascript
+const appName = import.meta.env.VITE_APP_NAME;
 ```
 
 ---
@@ -198,16 +181,46 @@ customAudit();
 | 0 | Success |
 | 1 | General error |
 | 2 | Configuration error |
-| 3 | Network error |
 
 ---
 
-## Environment Variables
+## Troubleshooting
 
-Scripts mungkin memerlukan environment variables:
+### "Port 5173 already in use"
 
-```env
-VITE_API_URL=<gas_web_app_url>
+```bash
+# Kill process
+lsof -ti:5173 | xargs kill -9
+
+# Or use different port
+npm run dev -- --port 3000
 ```
 
-Pastikan `.env` file sudah dikonfigurasi sebelum menjalankan scripts.
+### "Build failed"
+
+```bash
+# Clear cache
+rm -rf node_modules/.vite
+rm -rf dist
+
+# Reinstall
+npm install
+
+# Rebuild
+npm run build
+```
+
+### "Test failed"
+
+```bash
+# Clear test cache
+rm -rf node_modules/.vite
+
+# Run tests
+npm run test
+```
+
+---
+
+**Last Updated:** 2026-02-25  
+**Version:** 4.0.0

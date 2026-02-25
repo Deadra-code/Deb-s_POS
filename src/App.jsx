@@ -1,16 +1,14 @@
 import { useState } from 'react';
-import './App.css';
+import { ThemeProvider } from './context/ThemeContext';
 import LoginPage from './pages/LoginPage';
 import DashboardLayout from './layouts/DashboardLayout';
-import NetworkStatus from './components/ui/NetworkStatus';
-import { ThemeProvider } from './context/ThemeContext';
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem('POS_TOKEN'));
-  const [view, setView] = useState('ANALYTICS');
 
   const handleLogout = () => {
     localStorage.removeItem('POS_TOKEN');
+    localStorage.removeItem('POS_ROLE');
     setToken(null);
   };
 
@@ -29,12 +27,9 @@ function App() {
 
   return (
     <ThemeProvider>
-      <NetworkStatus />
-      <DashboardLayout
-        view={view}
-        setView={setView}
-        onLogout={handleLogout}
-      />
+      <DashboardLayout view={localStorage.getItem('POS_VIEW') || 'ANALYTICS'} setView={(v) => {
+        localStorage.setItem('POS_VIEW', v);
+      }} onLogout={handleLogout} />
     </ThemeProvider>
   );
 }

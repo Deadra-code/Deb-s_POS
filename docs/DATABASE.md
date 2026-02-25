@@ -1,97 +1,172 @@
-# Database Schema
+# Database Schema - IndexedDB
 
-Database menggunakan Google Sheets dengan struktur sebagai berikut:
+Database menggunakan **IndexedDB** dengan struktur sebagai berikut:
 
-## 1. Data_Menu
+## Database Info
+
+- **Name:** `debs-pos-db`
+- **Version:** `1`
+- **Location:** Browser (IndexedDB)
+- **Type:** NoSQL (Object Store)
+
+---
+
+## 1. products
 
 Menyimpan semua produk/menu yang dijual.
 
-| Column | Index | Type | Description | Example |
-|--------|-------|------|-------------|---------|
-| ID | A | String | Unique product identifier | MN-001 |
-| Nama_Menu | B | String | Nama produk | Nasi Goreng Spesial |
-| Kategori | C | String | Kategori produk | Makanan |
-| Harga | D | Integer | Harga jual (Rp) | 25000 |
-| Foto_URL | E | String | URL foto produk | https://... |
-| Status | F | String | Ketersediaan | Tersedia / Habis |
-| Stock | G | Integer | Jumlah stok | 50 |
-| Milik | H | String | Pemilik produk | Debby / Mama |
-| Modal | I | Integer | Harga modal (COGS) | 15000 |
-| Varian | J | String | Varian yang tersedia | Level: Sedang, Pedas |
+### Schema
 
-**Contoh Data:**
+```javascript
+{
+  id: number,           // Auto-increment primary key
+  nama: string,         // Nama produk
+  kategori: string,     // Kategori (Makanan, Minuman, dll)
+  harga: number,        // Harga jual (Rp)
+  modal: number,        // Harga modal (COGS)
+  stock: number,        // Jumlah stok
+  status: string,       // 'Tersedia' | 'Habis'
+  owner: string,        // 'Debby' | 'Mama'
+  varian: string,       // Varian yang tersedia
+  foto: string          // URL foto produk
+}
 ```
-| ID    | Nama_Menu          | Kategori  | Harga | Foto_URL | Status    | Stock | Milik | Modal | Varian                    |
-|-------|--------------------|-----------|-------|----------|-----------|-------|-------|-------|---------------------------|
-| MN-001| Nasi Goreng Spesial| Makanan   | 25000 |          | Tersedia  | 50    | Debby | 15000 | Level: Sedang, Pedas      |
-| MN-002| Es Teh Manis       | Minuman   | 5000  |          | Tersedia  | 100   | Debby | 2000  |                           |
+
+### Indexes
+
+| Index Name | Key Path | Unique |
+|------------|----------|--------|
+| nama | nama | false |
+| kategori | kategori | false |
+| status | status | false |
+| owner | owner | false |
+
+### Contoh Data
+
+```javascript
+{
+  id: 1,
+  nama: "Nasi Goreng Spesial",
+  kategori: "Makanan",
+  harga: 25000,
+  modal: 15000,
+  stock: 50,
+  status: "Tersedia",
+  owner: "Debby",
+  varian: "Level: Sedang, Pedas",
+  foto: ""
+}
 ```
 
 ---
 
-## 2. Data_User
-
-Menyimpan data pengguna untuk autentikasi.
-
-| Column | Index | Type | Description | Example |
-|--------|-------|------|-------------|---------|
-| Username | A | String | Nama pengguna | admin |
-| Password | B | String | Password/passcode | admin123 |
-| Role | C | String | Role pengguna | Owner / Admin / Cashier |
-
-**Contoh Data:**
-```
-| Username | Password  | Role  |
-|----------|-----------|-------|
-| admin    | admin123  | Owner |
-| cashier1 | 1234      | Admin |
-```
-
----
-
-## 3. Riwayat_Transaksi
+## 2. orders
 
 Menyimpan semua riwayat transaksi penjualan.
 
-| Column | Index | Type | Description | Example |
-|--------|-------|------|-------------|---------|
-| ID_Order | A | String | Unique order identifier | ORD-123456 |
-| Tanggal | B | Date | Tanggal transaksi | 2025-12-26 |
-| Jam | C | Time | Waktu transaksi | 14:30 |
-| Tipe_Order | D | String | Tipe pesanan | Dine In / Take Away / Delivery |
-| Items_JSON | E | JSON | Array items yang dibeli | `[{"nama":"Nasi Goreng","qty":2}]` |
-| Total_Bayar | F | Integer | Total pembayaran (include tax/service) | 50000 |
-| Metode_Bayar | G | String | Metode pembayaran | Cash / QRIS / Transfer |
-| Status | H | String | Status pesanan | Proses / Selesai / Batal |
-| Tax_Amount | I | Integer | Jumlah pajak (Rp) | 5000 |
-| Service_Amount | J | Integer | Jumlah service charge (Rp) | 2500 |
+### Schema
 
-**Contoh Data:**
+```javascript
+{
+  id: number,              // Auto-increment primary key
+  orderNumber: string,     // Unique order identifier (ORD-XXXXX)
+  tanggal: string,         // Tanggal (YYYY-MM-DD)
+  jam: string,             // Waktu (HH:MM)
+  items: array,            // Array items yang dibeli
+  total: number,           // Total pembayaran (include tax/service)
+  payment: string,         // 'Tunai' | 'QRIS' | 'Transfer'
+  type: string,            // 'Dine In' | 'Takeaway'
+  status: string,          // 'Proses' | 'Selesai' | 'Batal'
+  tax: number,             // Jumlah pajak (Rp)
+  service: number,         // Jumlah service charge (Rp)
+  createdAt: string        // ISO timestamp
+}
 ```
-| ID_Order | Tanggal   | Jam   | Tipe_Order | Items_JSON                          | Total_Bayar | Metode_Bayar | Status  | Tax_Amount | Service_Amount |
-|----------|-----------|-------|------------|-------------------------------------|-------------|--------------|---------|------------|----------------|
-| ORD-001  | 2025-12-26| 14:30 | Dine In    | [{"nama":"Nasi Goreng","qty":2}]    | 50000       | QRIS         | Selesai | 0          | 0              |
-| ORD-002  | 2025-12-26| 15:00 | Take Away  | [{"nama":"Es Teh","qty":3}]         | 15000       | Cash         | Proses  | 0          | 0              |
+
+### Indexes
+
+| Index Name | Key Path | Unique |
+|------------|----------|--------|
+| orderNumber | orderNumber | true |
+| tanggal | tanggal | false |
+| status | status | false |
+| createdAt | createdAt | false |
+
+### Contoh Data
+
+```javascript
+{
+  id: 1,
+  orderNumber: "ORD-1708876543210",
+  tanggal: "2026-02-25",
+  jam: "14:30",
+  items: [
+    {
+      nama: "Nasi Goreng Spesial",
+      qty: 2,
+      harga: 25000
+    }
+  ],
+  total: 50000,
+  payment: "QRIS",
+  type: "Dine In",
+  status: "Selesai",
+  tax: 0,
+  service: 0,
+  createdAt: "2026-02-25T14:30:00.000Z"
+}
 ```
 
 ---
 
-## 4. Settings
+## 3. settings
 
 Menyimpan konfigurasi aplikasi.
 
-| Column | Index | Type | Description | Example |
-|--------|-------|------|-------------|---------|
-| Key | A | String | Kunci konfigurasi | Store_Name |
-| Value | B | String | Nilai konfigurasi | Deb's Kitchen |
+### Schema
 
-**Default Settings:**
+```javascript
+{
+  key: string,    // Primary key
+  value: any      // Nilai konfigurasi
+}
 ```
-| Key          | Value         |
-|--------------|---------------|
-| Store_Name   | Deb's Kitchen |
-| Tax_Rate     | 0             |
-| Service_Charge| 0            |
+
+### Default Settings
+
+```javascript
+[
+  { key: "store_name", value: "Deb's Kitchen" },
+  { key: "tax_rate", value: "0" },
+  { key: "service_charge", value: "0" },
+  { key: "currency", value: "IDR" }
+]
+```
+
+---
+
+## 4. users
+
+Menyimpan data pengguna untuk autentikasi.
+
+### Schema
+
+```javascript
+{
+  username: string,    // Primary key
+  password: string,    // Passcode (plain text)
+  role: string         // 'Owner' | 'Admin' | 'Cashier'
+}
+```
+
+### Default User
+
+```javascript
+{
+  username: "admin",
+  password: "admin123",
+  role: "Owner"
+}
 ```
 
 ---
@@ -99,35 +174,243 @@ Menyimpan konfigurasi aplikasi.
 ## Relationships
 
 ```
-Data_Menu (Products)
-    │
-    ├──< Riwayat_Transaksi (Items_JSON references product names)
-    │
-    └──< Data_User (Milik column references owner)
+products
+  │
+  └──< orders.items (embedded references)
+
+users
+  └── Authentication & authorization
+
+settings
+  └── Application configuration
 ```
 
 ---
 
-## Index & Performance
+## CRUD Operations
 
-### Recommended Sort Orders
-- **Data_Menu**: Sort by `Kategori`, then `Nama_Menu`
-- **Riwayat_Transaksi**: Sort by `Tanggal` DESC, `Jam` DESC
-- **Data_User**: Sort by `Role`, then `Username`
+### Products
 
-### Data Validation Rules
-| Sheet | Column | Rule |
-|-------|--------|------|
-| Data_Menu | Status | Must be "Tersedia" or "Habis" |
-| Data_Menu | Stock | Must be >= 0 |
-| Data_Menu | Harga | Must be > 0 |
-| Data_Menu | Modal | Must be >= 0 |
-| Riwayat_Transaksi | Status | Must be "Proses", "Selesai", or "Batal" |
+```javascript
+import { getProducts, saveProduct, deleteProduct } from './services/indexeddb-api';
+
+// Get all
+const products = await getProducts();
+
+// Get by ID
+const product = await getProductById(1);
+
+// Create/Update
+await saveProduct({
+  nama: "Nasi Goreng",
+  kategori: "Makanan",
+  harga: 25000,
+  modal: 15000,
+  stock: 50,
+  status: "Tersedia",
+  owner: "Debby"
+});
+
+// Delete
+await deleteProduct(1);
+```
+
+### Orders
+
+```javascript
+import { getOrders, saveOrder, updateOrderStatus } from './services/indexeddb-api';
+
+// Get all
+const orders = await getOrders();
+
+// Create
+await saveOrder({
+  orderNumber: "ORD-123456",
+  tanggal: "2026-02-25",
+  jam: "14:30",
+  items: [...],
+  total: 50000,
+  payment: "QRIS",
+  type: "Dine In",
+  status: "Proses"
+});
+
+// Update status
+await updateOrderStatus(1, "Selesai");
+```
+
+### Settings
+
+```javascript
+import { getSettings, saveSettings } from './services/indexeddb-api';
+
+// Get all
+const settings = await getSettings();
+
+// Update
+await saveSettings({
+  store_name: "Deb's Kitchen",
+  tax_rate: "10"
+});
+```
+
+### Users
+
+```javascript
+import { getUsers, addUser, updateUser } from './services/indexeddb-api';
+
+// Get all
+const users = await getUsers();
+
+// Create
+await addUser({
+  username: "cashier1",
+  password: "1234",
+  role: "Cashier"
+});
+
+// Update
+await updateUser({
+  username: "cashier1",
+  password: "5678",
+  role: "Admin"
+});
+```
 
 ---
 
-## Backup Strategy
+## Backup & Restore
 
-1. **Manual Backup**: Download .xlsx dari Google Sheets secara berkala
-2. **Archive**: Pindahkan transaksi > 1 tahun ke spreadsheet terpisah
-3. **Version Control**: Simpan backup di Google Drive dengan timestamp
+### Backup
+
+```javascript
+import { backupData } from './services/indexeddb-api';
+
+const backup = await backupData();
+// Returns: { version, timestamp, data: { products, orders, settings, users } }
+```
+
+### Restore
+
+```javascript
+import { restoreData } from './services/indexeddb-api';
+
+const file = event.target.files[0];
+const text = await file.text();
+const backup = JSON.parse(text);
+await restoreData(backup);
+```
+
+---
+
+## Performance Considerations
+
+### Index Usage
+
+- Query by category: Uses `kategori` index
+- Query by status: Uses `status` index
+- Query by date: Uses `createdAt` index
+- Search by name: Uses `nama` index
+
+### Best Practices
+
+1. **Use indexes for queries** - Avoid full table scans
+2. **Batch operations** - Use `bulkAdd` / `bulkUpdate` for multiple records
+3. **Clear old data** - Archive orders > 1 year
+4. **Regular backup** - Export data periodically
+
+---
+
+## Data Validation
+
+### Products
+
+| Field | Validation |
+|-------|------------|
+| nama | Required, min 3 chars |
+| kategori | Required, enum |
+| harga | Required, > 0 |
+| modal | Required, >= 0 |
+| stock | Required, >= 0 |
+| status | Required, enum |
+| owner | Required, enum |
+
+### Orders
+
+| Field | Validation |
+|-------|------------|
+| orderNumber | Required, unique |
+| items | Required, array |
+| total | Required, > 0 |
+| payment | Required, enum |
+| status | Required, enum |
+
+---
+
+## Migration from Google Sheets
+
+### Old Schema (Google Sheets)
+
+```
+Data_Menu:
+  - ID, Nama_Menu, Kategori, Harga, Foto_URL, Status, Stock, Milik, Modal, Varian
+```
+
+### New Schema (IndexedDB)
+
+```
+products:
+  - id, nama, kategori, harga, foto, status, stock, owner, modal, varian
+```
+
+### Mapping
+
+| Google Sheets | IndexedDB |
+|---------------|-----------|
+| ID | id (auto) |
+| Nama_Menu | nama |
+| Kategori | kategori |
+| Harga | harga |
+| Foto_URL | foto |
+| Status | status |
+| Stock | stock |
+| Milik | owner |
+| Modal | modal |
+| Varian | varian |
+
+---
+
+## Troubleshooting
+
+### Database Not Found
+
+```javascript
+// Check if database exists
+const request = indexedDB.open('debs-pos-db', 1);
+request.onsuccess = () => {
+  console.log('Database exists');
+};
+request.onerror = () => {
+  console.log('Database not found');
+};
+```
+
+### Reset Database
+
+```javascript
+import { seedInitialData } from './services/database';
+
+// Clear all stores
+await clearStore('products');
+await clearStore('orders');
+await clearStore('settings');
+await clearStore('users');
+
+// Re-seed default data
+await seedInitialData();
+```
+
+---
+
+**Last Updated:** 2026-02-25  
+**Version:** 4.0.0 (IndexedDB)

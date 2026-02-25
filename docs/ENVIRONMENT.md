@@ -2,28 +2,24 @@
 
 Panduan setup environment untuk development dan production.
 
+---
+
 ## Environment Variables
 
-### Required Variables
+### Not Required (Offline-First)
 
-```env
-# Google Apps Script Web App URL
-VITE_API_URL=https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec
-```
+Aplikasi ini **TIDAK** memerlukan environment variables karena berjalan 100% offline tanpa backend server.
 
 ### Optional Variables
 
 ```env
-# App configuration
+# App Configuration (Optional)
 VITE_APP_NAME=Deb's POS Pro
-VITE_APP_VERSION=3.15.1
+VITE_APP_VERSION=4.0.0
 
-# Feature flags
+# Feature Flags (Optional)
 VITE_ENABLE_PWA=true
 VITE_ENABLE_HAPTICS=true
-
-# Debug mode
-VITE_DEBUG_MODE=false
 ```
 
 ---
@@ -32,141 +28,235 @@ VITE_DEBUG_MODE=false
 
 ```
 project-root/
-├── .env                  # Local environment (gitignored)
-├── .env.example          # Template for environment variables
-├── .env.development      # Development-specific
-├── .env.production       # Production-specific
-└── .env.test            # Testing-specific
+├── .env                  # Optional (not required)
+├── .env.example          # Template
+└── vite.config.js        # Vite configuration
 ```
 
 ---
 
 ## Setup Instructions
 
-### 1. Development Setup
+### 1. Clone Repository
 
 ```bash
-# Clone repository
 git clone <repository-url>
 cd debs-pos
+```
 
-# Install dependencies
+### 2. Install Dependencies
+
+```bash
 npm install
+```
 
-# Create .env file
-cp .env.example .env
+### 3. Start Development
 
-# Edit .env with your values
-# VITE_API_URL=<your_gas_url>
-
-# Start development server
+```bash
 npm run dev
 ```
 
-### 2. Production Setup
+App akan berjalan di: **http://localhost:5173**
 
-```bash
-# Build for production
-npm run build
+### 4. Login
 
-# The build will use .env.production if available
-# Or .env if .env.production doesn't exist
+```
+Passcode: admin123
 ```
 
-### 3. Testing Setup
+---
+
+## Development Mode
+
+### Start Dev Server
 
 ```bash
-# Tests use .env.test if available
+npm run dev
+```
+
+**Output:**
+```
+  VITE v7.2.5  ready in 500 ms
+
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: use --host to expose
+```
+
+### Hot Module Replacement
+
+- Changes auto-reload
+- State preserved for components
+- Console shows updates
+
+---
+
+## Production Mode
+
+### Build for Production
+
+```bash
+npm run build
+```
+
+**Output:**
+```
+✓ built in 3.84s
+dist/
+  index.html
+  assets/
+  sw.js (service worker)
+```
+
+### Preview Production Build
+
+```bash
+npm run preview
+```
+
+**Output:**
+```
+  ➜  Local:   http://localhost:4173/
+```
+
+---
+
+## PWA Configuration
+
+### Development
+
+PWA works in development mode but requires HTTPS for some features.
+
+```bash
+npm run dev
+# Open: http://localhost:5173
+# Install prompt may not appear (expected)
+```
+
+### Production
+
+PWA requires HTTPS (except localhost).
+
+**Deployment options:**
+1. **Vercel/Netlify:** Auto HTTPS
+2. **GitHub Pages:** Auto HTTPS
+3. **Custom server:** Configure SSL
+
+---
+
+## Browser Requirements
+
+### Supported Browsers
+
+| Browser | Version | Support |
+|---------|---------|---------|
+| Chrome | 90+ | ✅ Full |
+| Edge | 90+ | ✅ Full |
+| Firefox | 85+ | ✅ Full |
+| Safari | 14+ | ⚠️ Limited |
+| Chrome Android | 90+ | ✅ Full |
+| Safari iOS | 14+ | ⚠️ Limited |
+
+### Required Features
+
+- IndexedDB
+- LocalStorage
+- Service Workers
+- PWA (manifest.json)
+
+---
+
+## Development Tools
+
+### VS Code Extensions (Recommended)
+
+```
+- ESLint
+- Prettier
+- Tailwind CSS IntelliSense
+- ES7+ React/Redux/React-Native snippets
+```
+
+### Browser DevTools
+
+**Chrome/Edge:**
+```
+F12 > 
+  Console - Errors & logs
+  Application - IndexedDB, Service Workers
+  Network - Requests
+  Components - React DevTools
+```
+
+**Install React DevTools:**
+- Chrome: [React Developer Tools](https://chrome.google.com/webstore)
+- Firefox: [React Developer Tools](https://addons.mozilla.org)
+
+---
+
+## Testing Environment
+
+### Unit Tests
+
+```bash
 npm run test
 ```
 
----
-
-## Getting API URL
-
-### Step 1: Deploy Backend
-
-1. Buka Google Apps Script
-2. Deploy sebagai Web App
-3. Copy Web App URL
-
-### Step 2: Update .env
-
-```env
-VITE_API_URL=https://script.google.com/macros/s/ABC123xyz/exec
-```
-
-### Step 3: Verify
+### E2E Tests
 
 ```bash
-# Check if URL is accessible
-curl "https://script.google.com/macros/s/ABC123xyz/exec?action=testIntegrity"
+npm run test:e2e
+```
+
+### Test Coverage
+
+```bash
+npm run test -- --coverage
 ```
 
 ---
 
-## Environment-Specific Configs
+## Deployment
 
-### Development (.env.development)
+### Option 1: Vercel
 
-```env
-VITE_API_URL=https://script.google.com/macros/s/DEV_ID/exec
-VITE_DEBUG_MODE=true
-VITE_ENABLE_HAPTICS=false
+```bash
+# Install Vercel CLI
+npm install -g vercel
+
+# Deploy
+vercel
 ```
 
-### Production (.env.production)
+### Option 2: Netlify
 
-```env
-VITE_API_URL=https://script.google.com/macros/s/PROD_ID/exec
-VITE_DEBUG_MODE=false
-VITE_ENABLE_HAPTICS=true
+```bash
+# Install Netlify CLI
+npm install -g netlify-cli
+
+# Deploy
+netlify deploy --prod
 ```
 
-### Testing (.env.test)
+### Option 3: GitHub Pages
 
-```env
-VITE_API_URL=https://script.google.com/macros/s/TEST_ID/exec
-VITE_DEBUG_MODE=true
+```bash
+# Update vite.config.js
+base: "/your-repo-name/"
+
+# Build & deploy
+npm run build
+# Push dist/ to gh-pages branch
 ```
 
----
+### Option 4: Custom Server
 
-## Vite Environment Variables
+```bash
+# Build
+npm run build
 
-Vite exposes environment variables via `import.meta.env`:
-
-```javascript
-// Access in code
-const apiUrl = import.meta.env.VITE_API_URL;
-const debugMode = import.meta.env.VITE_DEBUG_MODE;
+# Copy dist/ to web server
+# Configure server to serve index.html for all routes
 ```
-
-### TypeScript Support
-
-Create `src/vite-env.d.ts`:
-
-```typescript
-/// <reference types="vite/client" />
-
-interface ImportMetaEnv {
-  readonly VITE_API_URL: string;
-  readonly VITE_DEBUG_MODE: string;
-}
-
-interface ImportMeta {
-  readonly env: ImportMetaEnv;
-}
-```
-
----
-
-## Security Best Practices
-
-1. **Never commit .env**: Pastikan `.env` ada di `.gitignore`
-2. **Use .env.example**: Template tanpa sensitive values
-3. **Rotate URLs**: Regenerate GAS Web App URL periodically
-4. **Limit Access**: Restrict GAS Web App access jika possible
 
 ---
 
@@ -174,76 +264,128 @@ interface ImportMeta {
 
 ### "VITE_API_URL is undefined"
 
-1. Pastikan file `.env` ada di root
-2. Restart dev server setelah edit .env
-3. Check variable name (harus prefix `VITE_`)
+**Not applicable** - App doesn't use API URL (offline-first).
 
-### "CORS Error"
-
-1. Verify GAS Web App URL benar
-2. Check GAS deployment: **ANYONE_ANONYMOUS**
-3. Ensure Content-Type: text/plain untuk POST
-
-### Build Using Wrong Environment
+### Build Fails
 
 ```bash
-# Specify mode explicitly
-npm run build -- --mode production
-npm run build -- --mode development
+# Clear cache
+rm -rf node_modules/.vite
+rm -rf dist
+
+# Reinstall
+npm install
+
+# Rebuild
+npm run build
+```
+
+### Dev Server Won't Start
+
+```bash
+# Check port
+lsof -i :5173
+
+# Kill process
+kill -9 <PID>
+
+# Restart
+npm run dev
+```
+
+### PWA Not Working
+
+1. **Check HTTPS:**
+   - Production must use HTTPS
+   - localhost works with HTTP
+
+2. **Clear cache:**
+   - DevTools > Application > Clear storage
+
+3. **Re-register service worker:**
+   - DevTools > Application > Service Workers > Unregister
+   - Reload page
+
+---
+
+## Configuration Files
+
+### vite.config.js
+
+```javascript
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import { VitePWA } from 'vite-plugin-pwa'
+
+export default defineConfig({
+  plugins: [
+    react(),
+    VitePWA({
+      registerType: 'autoUpdate',
+      manifest: {
+        name: "Deb's POS Pro",
+        short_name: "Deb's POS",
+        theme_color: "#10b981"
+      }
+    })
+  ]
+})
+```
+
+### tailwind.config.js
+
+```javascript
+export default {
+  darkMode: 'class',
+  content: [
+    './index.html',
+    './src/**/*.{js,jsx,ts,tsx}'
+  ],
+  theme: {
+    extend: {
+      colors: {
+        // shadcn/ui theme
+      }
+    },
+  },
+  plugins: [],
+}
 ```
 
 ---
 
-## Environment Validation Script
+## System Requirements
 
-```javascript
-// scripts/validate-env.cjs
-const fs = require('fs');
-require('dotenv').config();
+### Minimum
 
-function validateEnv() {
-  const required = ['VITE_API_URL'];
-  const missing = required.filter(key => !process.env[key]);
-  
-  if (missing.length > 0) {
-    console.error('Missing environment variables:', missing);
-    process.exit(1);
-  }
-  
-  console.log('Environment validation passed');
-}
+- Node.js v18+
+- npm v8+
+- 2GB RAM
+- Modern browser with IndexedDB support
 
-validateEnv();
-```
+### Recommended
 
-Add to package.json:
-
-```json
-{
-  "scripts": {
-    "validate:env": "node scripts/validate-env.cjs"
-  }
-}
-```
+- Node.js v20+
+- npm v10+
+- 4GB RAM
+- Chrome/Edge latest
+- SSD for faster builds
 
 ---
 
 ## Quick Reference
 
-| Variable | Description | Required |
-|----------|-------------|----------|
-| VITE_API_URL | GAS Web App URL | Yes |
-| VITE_DEBUG_MODE | Enable debug logging | No |
-| VITE_ENABLE_PWA | Enable PWA features | No |
-| VITE_ENABLE_HAPTICS | Enable haptic feedback | No |
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start dev server |
+| `npm run build` | Build production |
+| `npm run preview` | Preview build |
+| `npm run lint` | ESLint |
+| `npm run test` | Unit tests |
+| `npm run test:e2e` | E2E tests |
+| `npm run backup` | Backup data |
 
 ---
 
-## Checklist
-
-- [ ] Create `.env` from `.env.example`
-- [ ] Set `VITE_API_URL` dengan GAS Web App URL
-- [ ] Verify API connection
-- [ ] Test login functionality
-- [ ] Build production version
-- [ ] Deploy and verify
+**Last Updated:** 2026-02-25  
+**Version:** 4.0.0
