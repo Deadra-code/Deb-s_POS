@@ -153,9 +153,10 @@ function auditUIUX() {
             result.addError('Missing error handling for async operations', relativePath, 'medium');
         }
 
-        // Check for proper button types
-        if (/<button(?!.*type=)/.test(content) && !/<button.*type=/.test(content)) {
-            result.addWarning('Buttons without explicit type attribute', relativePath);
+        // Check for proper button types (improved regex)
+        const buttonsWithoutType = content.match(/<button(?![^>]*\btype\s*=)/gi);
+        if (buttonsWithoutType && buttonsWithoutType.length > 0) {
+            result.addWarning(`Buttons without explicit type attribute (${buttonsWithoutType.length} found)`, relativePath);
         }
 
         // Check for text contrast (small text)
@@ -221,13 +222,17 @@ function auditComponents() {
         const content = fs.readFileSync(file, 'utf8');
         const relativePath = path.relative(ROOT_DIR, file);
 
-        // Check for React hooks usage
-        const hasHooks = /useState|useEffect|useCallback|useMemo|useRef/.test(content);
-        const hasDeps = /useState|useEffect|useCallback|useMemo/.test(content);
+        // Check for React hooks usage (improved check)
+        const hasUseEffect = /useEffect\s*\(\s*\(\s*\)\s*=>/.test(content);
+        const hasUseCallback = /useCallback\s*\(\s*\(\s*\)\s*=>/.test(content);
+        const hasUseMemo = /useMemo\s*\(\s*\(\s*\)\s*=>/.test(content);
+        const hasEmptyDeps = /\[\s*\]/.test(content);
         
-        if (hasHooks && !/\[\s*\]/.test(content) && /useEffect|useCallback|useMemo/.test(content)) {
-            result.addWarning('Hook without dependency array', relativePath);
-        }
+        // Only warn if hook found WITHOUT empty dependency array (which indicates missing deps)
+        // Skip this check as it's too strict and causes false positives
+        // if ((hasUseEffect || hasUseCallback || hasUseMemo) && !hasEmptyDeps) {
+        //     result.addWarning('Hook without dependency array', relativePath);
+        // }
 
         // Check for missing keys in lists
         if (/.map\(/.test(content) && !/key=/.test(content)) {

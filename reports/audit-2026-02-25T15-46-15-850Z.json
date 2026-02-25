@@ -1,0 +1,54 @@
+{
+  "timestamp": "2026-02-25T15-46-15-850Z",
+  "results": [
+    {
+      "category": "Security",
+      "score": 95,
+      "passed": true,
+      "errors": 0,
+      "warnings": 1,
+      "suggestions": 0
+    },
+    {
+      "category": "Performance",
+      "score": 100,
+      "passed": true,
+      "errors": 0,
+      "warnings": 0,
+      "suggestions": 8
+    },
+    {
+      "category": "Accessibility",
+      "score": 100,
+      "passed": true,
+      "errors": 0,
+      "warnings": 0,
+      "suggestions": 0
+    },
+    {
+      "category": "UI/UX",
+      "score": 100,
+      "passed": true,
+      "errors": 0,
+      "warnings": 0,
+      "suggestions": 5
+    },
+    {
+      "category": "Components",
+      "score": 100,
+      "passed": true,
+      "errors": 0,
+      "warnings": 0,
+      "suggestions": 1
+    },
+    {
+      "category": "Best Practices",
+      "score": 100,
+      "passed": true,
+      "errors": 0,
+      "warnings": 0,
+      "suggestions": 0
+    }
+  ],
+  "averageScore": 99.16666666666667
+}

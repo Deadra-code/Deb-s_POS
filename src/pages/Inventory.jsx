@@ -305,7 +305,7 @@ const Inventory = ({ menu, refreshData, loading: parentLoading }) => {
               Kelola daftar menu dan stok
             </p>
           </div>
-          <Button onClick={handleAdd} className="gap-2 h-12">
+          <Button type="button" onClick={handleAdd} className="gap-2 h-12">
             <Plus size={20} />
             Produk Baru
           </Button>
@@ -333,7 +333,7 @@ const Inventory = ({ menu, refreshData, loading: parentLoading }) => {
 
           <div className="flex gap-2 overflow-x-auto">
             {categories.map((cat) => (
-              <Button
+              <Button type="button"
                 key={cat}
                 variant={filterCategory === cat ? 'default' : 'outline'}
                 onClick={() => {
@@ -441,7 +441,7 @@ const Inventory = ({ menu, refreshData, loading: parentLoading }) => {
                           </div>
 
                           <div className="flex gap-1">
-                            <Button
+                            <Button type="button"
                               variant="outline"
                               size="icon"
                               className="h-8 w-8"
@@ -449,7 +449,7 @@ const Inventory = ({ menu, refreshData, loading: parentLoading }) => {
                             >
                               <Pencil size={14} />
                             </Button>
-                            <Button
+                            <Button type="button"
                               variant="outline"
                               size="icon"
                               className="h-8 w-8 text-red-500 hover:text-red-700"
@@ -579,7 +579,7 @@ const Inventory = ({ menu, refreshData, loading: parentLoading }) => {
                       </td>
                       <td className="p-4">
                         <div className="flex gap-2">
-                          <Button
+                          <Button type="button"
                             variant="outline"
                             size="icon"
                             onClick={() => handleEdit(item)}
@@ -587,7 +587,7 @@ const Inventory = ({ menu, refreshData, loading: parentLoading }) => {
                           >
                             <Pencil size={18} />
                           </Button>
-                          <Button
+                          <Button type="button"
                             variant="outline"
                             size="icon"
                             onClick={() => handleDelete(item)}

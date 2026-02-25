@@ -370,7 +370,7 @@ const Analytics = ({ loading: parentLoading }) => {
                     </span>
                   </div>
                   <div className="pt-4">
-                    <Button className="w-full" variant="outline">
+                    <Button className="w-full" variant="outline" type="button">
                       Export Laporan
                     </Button>
                   </div>

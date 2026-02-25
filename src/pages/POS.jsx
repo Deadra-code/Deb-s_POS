@@ -98,7 +98,7 @@ const CartItem = ({ item, onUpdateQty }) => {
       </div>
       
       <div className="flex items-center gap-2">
-        <Button
+        <Button type="button"
           variant="outline"
           size="icon"
           className="h-8 w-8 rounded-lg"
@@ -109,7 +109,7 @@ const CartItem = ({ item, onUpdateQty }) => {
         <span className="font-bold text-slate-800 dark:text-white w-6 text-center">
           {item.qty}
         </span>
-        <Button
+        <Button type="button"
           variant="outline"
           size="icon"
           className="h-8 w-8 rounded-lg"
@@ -150,7 +150,7 @@ const CheckoutModal = ({ isOpen, onClose, total, payMethod, setPayMethod, onChec
             </label>
             <div className="grid grid-cols-3 gap-2">
               {paymentMethods.map((method) => (
-                <Button
+                <Button type="button"
                   key={method}
                   variant={payMethod === method ? 'default' : 'outline'}
                   className="h-12"
@@ -164,10 +164,10 @@ const CheckoutModal = ({ isOpen, onClose, total, payMethod, setPayMethod, onChec
         </div>
         
         <DialogFooter>
-          <Button variant="outline" onClick={onClose} disabled={loading}>
+          <Button type="button" variant="outline" onClick={onClose} disabled={loading}>
             Batal
           </Button>
-          <Button onClick={onCheckout} disabled={loading} className="gap-2">
+          <Button type="button" onClick={onCheckout} disabled={loading} className="gap-2">
             {loading ? (
               <>
                 <Loader2 className="animate-spin" size={18} />
@@ -226,10 +226,10 @@ const CustomItemModal = ({ isOpen, onClose, customItem, setCustomItem, onAdd }) 
         </div>
         
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
+          <Button type="button" variant="outline" onClick={onClose}>
             Batal
           </Button>
-          <Button onClick={onAdd}>Tambahkan</Button>
+          <Button type="button" onClick={onAdd}>Tambahkan</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -453,7 +453,7 @@ const POS = ({ menu, refreshData, loading: menuLoading }) => {
           </header>
 
           {/* Custom Item Button */}
-          <Button
+          <Button type="button"
             variant="outline"
             className="w-full mb-6 h-14 border-2 border-dashed border-emerald-300 dark:border-emerald-700 text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/40"
             onClick={() => setCustomItemOpen(true)}
@@ -506,7 +506,7 @@ const POS = ({ menu, refreshData, loading: menuLoading }) => {
               <div className="col-span-full text-center py-20 text-slate-400 dark:text-slate-500 flex flex-col items-center">
                 <XCircle size={48} className="mb-4 opacity-50" />
                 <p className="font-bold">Tidak ada menu ditemukan</p>
-                <Button
+                <Button type="button"
                   variant="link"
                   onClick={() => {
                     setSearch('');
@@ -576,7 +576,7 @@ const POS = ({ menu, refreshData, loading: menuLoading }) => {
                 {formatCurrency(total)}
               </span>
             </div>
-            <Button
+            <Button type="button"
               onClick={() => setCheckoutOpen(true)}
               disabled={!cart.length}
               className="w-full h-12 text-base"
@@ -590,7 +590,7 @@ const POS = ({ menu, refreshData, loading: menuLoading }) => {
         {/* Mobile Cart Button */}
         {cart.length > 0 && (
           <div className="md:hidden fixed bottom-20 left-4 right-4 z-50">
-            <Button
+            <Button type="button"
               onClick={() => setCartOpen(true)}
               className="w-full h-14 shadow-xl"
             >
@@ -627,7 +627,7 @@ const POS = ({ menu, refreshData, loading: menuLoading }) => {
                   {formatCurrency(total)}
                 </span>
               </div>
-              <Button
+              <Button type="button"
                 onClick={() => {
                   setCartOpen(false);
                   setCheckoutOpen(true);

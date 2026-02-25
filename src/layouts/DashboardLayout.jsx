@@ -121,6 +121,7 @@ const DashboardLayout = ({ view, setView, onLogout }) => {
               <Button
                 variant="ghost"
                 size="icon"
+                type="button"
                 onClick={toggleTheme}
                 className="h-9 w-9 rounded-lg bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-emerald-500 transition-all active:rotate-12"
               >
@@ -137,6 +138,7 @@ const DashboardLayout = ({ view, setView, onLogout }) => {
             <div className="border-t dark:border-slate-800 pt-4 space-y-2">
               <Button
                 variant="ghost"
+                type="button"
                 className="w-full justify-start gap-3 text-slate-500 hover:bg-slate-50 hover:text-slate-800 dark:hover:bg-slate-800"
                 onClick={() => setSetOpen(true)}
               >
@@ -145,6 +147,7 @@ const DashboardLayout = ({ view, setView, onLogout }) => {
               </Button>
               <Button
                 variant="ghost"
+                type="button"
                 className="w-full justify-start gap-3 text-red-500 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-900/20"
                 onClick={onLogout}
               >
