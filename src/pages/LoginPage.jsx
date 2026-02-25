@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Lock, Store, ArrowRight, Loader2 } from 'lucide-react';
+import { Lock, Store, ArrowRight, Loader2 } from '../components/ui/icons';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Card, CardContent } from '../components/ui/Card';
-import { getAll, add, seedInitialData } from '../services/database';
+import { getAll, seedInitialData } from '../services/database';
+import { verifyPasscode, isHashed } from '../utils/security';
 import { Toaster } from '../hooks';
 
 const LoginPage = ({ onLogin }) => {
@@ -32,14 +33,37 @@ const LoginPage = ({ onLogin }) => {
 
     try {
       const users = await getAll('users');
-      const user = users.find(u => u.password === passcode);
+      let authenticatedUser = null;
 
-      if (user) {
+      for (const user of users) {
+        // Check if password is hashed
+        if (isHashed(user.password)) {
+          const isValid = await verifyPasscode(passcode, user.password);
+          if (isValid) {
+            authenticatedUser = user;
+            break;
+          }
+        } else {
+          // Legacy plain text comparison (for backward compatibility during migration)
+          if (user.password === passcode) {
+            authenticatedUser = user;
+            // Upgrade to hashed password
+            const { hashPasscode } = await import('../utils/security.js');
+            user.password = await hashPasscode(passcode);
+            await import('../services/database.js').then(({ update }) => 
+              update('users', user)
+            );
+            break;
+          }
+        }
+      }
+
+      if (authenticatedUser) {
         // Simulate small delay for better UX
         await new Promise(resolve => setTimeout(resolve, 300));
-        localStorage.setItem('POS_TOKEN', user.username);
-        localStorage.setItem('POS_ROLE', user.role);
-        onLogin(user.username);
+        localStorage.setItem('POS_TOKEN', authenticatedUser.username);
+        localStorage.setItem('POS_ROLE', authenticatedUser.role);
+        onLogin(authenticatedUser.username);
       } else {
         setError('Passcode salah. Silakan coba lagi.');
         setPasscode('');
@@ -76,7 +100,7 @@ const LoginPage = ({ onLogin }) => {
                     <Store size={36} className="text-white" />
                   </div>
                   <h1 className="text-5xl font-black mb-6 leading-tight">
-                    Deb's Store POS System
+                    Deb&apos;s Store POS System
                   </h1>
                   <p className="text-emerald-50 text-xl font-medium opacity-90 leading-relaxed">
                     Kelola inventaris, pantau laporan, dan proses transaksi lebih cepat dan elegan.
@@ -133,7 +157,7 @@ const LoginPage = ({ onLogin }) => {
                 <Store size={24} />
               </div>
               <span className="font-black text-2xl tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-600">
-                Deb's Store
+                Deb&apos;s Store
               </span>
             </motion.div>
 
@@ -237,7 +261,7 @@ const LoginPage = ({ onLogin }) => {
                   className="mt-10 pt-6 border-t border-slate-100 dark:border-slate-800 text-center"
                 >
                   <p className="text-slate-400 dark:text-slate-600 text-xs font-medium tracking-wide">
-                    © {new Date().getFullYear()} Deb's Store POS. All Rights Reserved.
+                    © {new Date().getFullYear()} Deb&apos;s Store POS. All Rights Reserved.
                   </p>
                 </motion.div>
               </CardContent>

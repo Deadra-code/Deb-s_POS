@@ -202,17 +202,21 @@ export async function importAllData(backupData) {
 // Seed initial data
 export async function seedInitialData() {
   const users = await getAll('users');
-  
+
   if (users.length === 0) {
+    // Import hash function dynamically to avoid circular dependency
+    const { hashPasscode } = await import('../utils/security.js');
+    const hashedPassword = await hashPasscode('admin123');
+    
     await add('users', {
       username: 'admin',
-      password: 'admin123',
+      password: hashedPassword, // Hashed passcode
       role: 'Owner'
     });
   }
-  
+
   const settings = await getAll('settings');
-  
+
   if (settings.length === 0) {
     await bulkAdd('settings', [
       { key: 'store_name', value: "Deb's Kitchen" },

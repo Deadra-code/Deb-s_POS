@@ -2,7 +2,7 @@
 
 ## 🎉 Perubahan Besar (Major Update)
 
-Aplikasi telah di-migrasi dari **Google Apps Script + Google Sheets** ke **IndexedDB (100% Offline)**.
+Aplikasi telah di-migrasi ke **IndexedDB (100% Offline)**.
 
 ---
 
@@ -20,11 +20,6 @@ Aplikasi telah di-migrasi dari **Google Apps Script + Google Sheets** ke **Index
 - **IndexedDB** - Database lokal di browser
 - **LocalStorage** - Session & cache
 - **PWA** - Progressive Web App (offline-capable)
-
-### Removed
-- ❌ Google Apps Script
-- ❌ Google Sheets
-- ❌ Online dependency
 
 ---
 
@@ -166,7 +161,7 @@ src/
 │   ├── Inventory.jsx        # To be updated
 │   └── ...
 ├── layouts/
-│   └── DashboardLayout.jsx  # Updated without GAS dependency
+│   └── DashboardLayout.jsx  # Updated for IndexedDB
 ├── App.jsx                  # Simplified
 ├── main.jsx                 # Entry point
 └── index.css                # Tailwind + CSS variables
@@ -176,7 +171,7 @@ src/
 
 ## 🔧 API Migration
 
-### Old (Google Apps Script)
+### Old
 ```javascript
 import { fetchData } from './services/api';
 

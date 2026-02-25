@@ -2,7 +2,7 @@
 
 ## Status: ✅ SELESAI
 
-Aplikasi telah berhasil di-migrasi sepenuhnya dari **Google Apps Script + Google Sheets** ke **IndexedDB (100% Offline)** dengan UI modern menggunakan shadcn/ui.
+Aplikasi telah berhasil di-migrasi sepenuhnya ke **IndexedDB (100% Offline)** dengan UI modern menggunakan shadcn/ui.
 
 ---
 
@@ -263,7 +263,7 @@ import { Badge } from '@/components/ui/Badge';
 
 ## 🔄 API Migration Guide
 
-### Old (Google Apps Script)
+### Old
 ```javascript
 import { fetchData } from './services/api';
 

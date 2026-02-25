@@ -355,9 +355,9 @@ test('should create new order', async ({ page }) => {
 
 ## Migration History
 
-### v3.x (Google Apps Script)
-- Backend: Google Apps Script
-- Database: Google Sheets
+### v3.x (Legacy Backend)
+- Backend: Legacy backend
+- Database: Cloud spreadsheet
 - Online only
 
 ### v4.0 (IndexedDB) - Current

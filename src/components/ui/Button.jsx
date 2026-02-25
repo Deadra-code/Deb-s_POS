@@ -42,4 +42,5 @@ const Button = React.forwardRef(({ className, variant, size, asChild = false, ..
 });
 Button.displayName = 'Button';
 
+/* eslint-disable react-refresh/only-export-components */
 export { Button, buttonVariants };

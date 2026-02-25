@@ -11,7 +11,7 @@ import {
   Loader2,
   Search,
   X,
-} from 'lucide-react';
+} from '../components/ui/icons';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
@@ -279,7 +279,7 @@ const Inventory = ({ menu, refreshData, loading: parentLoading }) => {
         variant: 'success',
       });
       refreshData();
-    } catch (err) {
+    } catch {
       toast({
         title: 'Gagal menghapus',
         variant: 'destructive',

@@ -1,4 +1,4 @@
-import { Loader } from 'lucide-react';
+import { Loader } from '../ui/icons';
 
 const TransactionList = ({ list, loading }) => {
     return (

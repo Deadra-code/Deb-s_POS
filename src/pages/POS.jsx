@@ -11,7 +11,7 @@ import {
   ChefHat,
   Loader2,
   XCircle,
-} from 'lucide-react';
+} from '../components/ui/icons';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Card, CardContent } from '../components/ui/Card';
@@ -19,7 +19,7 @@ import { Badge } from '../components/ui/Badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '../components/ui/Dialog';
 import { ScrollArea } from '../components/ui/ScrollArea';
 import { Toaster, useToast } from '../hooks';
-import { getProducts, saveOrder, getTopItems } from '../services/indexeddb-api';
+import { saveOrder, getTopItems } from '../services/indexeddb-api';
 import { formatCurrency } from '../utils/format';
 import haptics from '../services/haptics';
 
@@ -474,7 +474,7 @@ const POS = ({ menu, refreshData, loading: menuLoading }) => {
                 </h3>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {favoriteProducts.map((item, idx) => (
+                {favoriteProducts.map((item) => (
                   <ProductCard
                     key={`fav-${item.id}`}
                     item={item}

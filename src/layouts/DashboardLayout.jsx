@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import { getAll } from '../services/database';
-import { Store, Package, ShoppingCart, Clock, ChefHat, Settings, LogOut, BarChart3, Sun, Moon } from 'lucide-react';
+import { Store, Package, ShoppingCart, Clock, ChefHat, Settings, LogOut, BarChart3, Sun, Moon } from '../components/ui/icons';
 import SettingsModal from '../components/SettingsModal';
 import Analytics from '../pages/Analytics';
 import POS from '../pages/POS';
@@ -49,7 +49,6 @@ const DashboardLayout = ({ view, setView, onLogout }) => {
   const [menuData, setMenuData] = useState([]);
   const [setOpen, setSetOpen] = useState(false);
   const [menuLoading, setMenuLoading] = useState(true);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const refreshData = useCallback(async () => {
     setMenuLoading(true);
@@ -77,7 +76,7 @@ const DashboardLayout = ({ view, setView, onLogout }) => {
             <div className="p-4 border-b dark:border-slate-800 flex justify-between items-center bg-white dark:bg-slate-900 sticky top-0">
               <h2 className="font-bold text-lg flex gap-2 items-center text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-600">
                 <Store className="text-emerald-500" size={24} />
-                Deb's POS
+                Deb&apos;s POS
               </h2>
               <Button
                 variant="ghost"

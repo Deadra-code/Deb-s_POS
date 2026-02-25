@@ -15,7 +15,7 @@
 
 ### For Developers
 
-1. Review [OFFLINE_MIGRATION.md](../OFFLINE_MIGRATION.md) for architecture
+1. Review [OFFLINE_MIGRATION.md](./OFFLINE_MIGRATION.md) for architecture
 2. Check [DATABASE.md](./DATABASE.md) for schema
 3. Read [COMPONENTS.md](./COMPONENTS.md) for UI guide
 4. See [TESTING.md](./TESTING.md) for testing
@@ -27,10 +27,25 @@
 | Document | Description |
 |----------|-------------|
 | [README.md](../README.md) | Project overview & quick start |
-| [OFFLINE_MIGRATION.md](../OFFLINE_MIGRATION.md) | Migration guide from GAS to IndexedDB |
-| [MIGRATION_COMPLETE.md](../MIGRATION_COMPLETE.md) | Complete migration summary |
+| [OFFLINE_MIGRATION.md](./OFFLINE_MIGRATION.md) | Migration guide to IndexedDB |
+| [MIGRATION_COMPLETE.md](./MIGRATION_COMPLETE.md) | Complete migration summary |
+| [CLEANUP_SUMMARY.md](./CLEANUP_SUMMARY.md) | Repository cleanup summary |
 | [ENVIRONMENT.md](./ENVIRONMENT.md) | Environment setup |
 | [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) | Common issues & solutions |
+
+---
+
+## 📋 Guides & References
+
+| Document | Description |
+|----------|-------------|
+| [STEP_BY_STEP_GUIDE.md](./STEP_BY_STEP_GUIDE.md) | Step-by-step usage guide |
+| [VISUAL_GUIDE.md](./VISUAL_GUIDE.md) | Visual UI guide |
+| [GITHUB_PAGES_DEPLOYMENT.md](./GITHUB_PAGES_DEPLOYMENT.md) | GitHub Pages deployment |
+| [DEPLOYMENT_FIXED.md](./DEPLOYMENT_FIXED.md) | Deployment fixes |
+| [GITHUB_PAGES_FIX.md](./GITHUB_PAGES_FIX.md) | GitHub Pages configuration |
+| [REPUBLISH_FIX.md](./REPUBLISH_FIX.md) | Republishing guide |
+| [RELEASE_NOTES_v4.md](./RELEASE_NOTES_v4.md) | v4.0.0 release notes |
 
 ---
 
@@ -48,11 +63,11 @@
 
 ## 📚 Deprecated Documentation
 
-These docs are **outdated** and reference the old Google Apps Script backend:
+These docs are **outdated** and have been removed:
 
 - ❌ ~~GAS_CICD_SETUP.md~~ - Removed
 - ❌ ~~BACKEND_DEPLOYMENT_TROUBLESHOOTING.md~~ - Removed
-- ❌ ~~DEPLOYMENT.md~~ - Removed (old GAS deployment)
+- ❌ ~~DEPLOYMENT.md~~ - Removed (legacy deployment)
 - ❌ ~~RDP.md~~ - Removed
 - ❌ ~~CHECKLIST.md~~ - Removed
 
@@ -248,7 +263,7 @@ This `docs/` folder is the **single source of truth** for:
 - Testing guidelines
 - Troubleshooting
 
-**External docs:** Deprecated (GAS-related docs removed)
+**External docs:** Deprecated (legacy backend docs removed)
 
 ---
 

@@ -1,4 +1,4 @@
-import * as LucideIcons from 'lucide-react';
+import * as IconRegistry from './icons';
 import { memo } from 'react';
 
 // Simple cache for icon names
@@ -18,7 +18,7 @@ const Icon = memo(({ name, size = 20, className = "" }) => {
         nameCache.set(name, pascalName);
     }
 
-    const LucideIcon = LucideIcons[pascalName] || LucideIcons.HelpCircle; // Fallback icon
+    const LucideIcon = IconRegistry[pascalName] || IconRegistry.HelpCircle; // Fallback icon
 
     return <LucideIcon size={size} className={className} />;
 });

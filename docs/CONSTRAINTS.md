@@ -25,22 +25,22 @@ Dokumen ini berisi **batasan, larangan, dan anti-patterns** yang TIDAK BOLEH dit
 
 ---
 
-### 2. **JANGAN Ubah Arsitektur Backend GAS**
+### 2. **JANGAN Ubah Arsitektur Backend Tanpa Persetujuan**
 
 **Dilarang:**
 - ❌ Migrasi ke Node.js/Express tanpa persetujuan
-- ❌ Ganti Google Sheets dengan database lain (MySQL, MongoDB)
+- ❌ Ganti IndexedDB dengan database server (MySQL, MongoDB)
 - ❌ Tambah layer middleware yang kompleks
 
 **Alasan:**
-- GAS sudah berfungsi baik
-- Google Sheets mudah di-manage oleh user non-teknis
+- IndexedDB sudah berfungsi baik
+- Data lokal mudah di-manage oleh user non-teknis
 - Zero server maintenance cost
 
 **Alternatif jika perlu scale:**
-- ✅ Optimize GAS code (query optimization)
+- ✅ Optimize IndexedDB queries
 - ✅ Tambah caching layer di frontend
-- ✅ Archive old data ke spreadsheet terpisah
+- ✅ Archive old data
 
 ---
 
@@ -111,8 +111,8 @@ const handleClick = useCallback(() => {
 
 **Dilarang:**
 ```javascript
-// ❌ Hardcoded API URL
-const API_URL = 'https://script.google.com/...';
+// ❌ Hardcoded values
+const API_URL = 'https://example.com/...';
 
 // ❌ Hardcoded colors
 className="bg-[#10b981]"
@@ -307,8 +307,7 @@ Sebelum implement fitur baru, jawab:
 | Charts | Recharts | ✅ Yes (jika lebih kecil) |
 | State | Context + useState | ❌ No Redux/MobX |
 | Build | Vite | ❌ No (sudah optimal) |
-| Backend | Google Apps Script | ❌ No (user requirement) |
-| Database | Google Sheets | ❌ No (user requirement) |
+| Database | IndexedDB | ❌ No (user requirement) |
 | Testing | Vitest + Playwright | ✅ Yes (tools tambahan OK) |
 
 ---

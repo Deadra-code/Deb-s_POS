@@ -1,5 +1,5 @@
 import { motion, useMotionValue, useTransform } from 'framer-motion';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw } from './icons';
 import { useState, useEffect } from 'react';
 import haptics from '../../services/haptics';
 

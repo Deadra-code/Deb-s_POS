@@ -1,6 +1,6 @@
 import Icon from '../ui/Icon';
 import Modal from '../ui/Modal';
-import { Loader } from 'lucide-react';
+import { Loader } from '../ui/icons';
 
 const CheckoutModal = ({ isOpen, onClose, total, payMethod, setPayMethod, onCheckout, loading }) => {
     return (

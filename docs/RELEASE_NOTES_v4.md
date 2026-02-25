@@ -10,8 +10,8 @@
 ## 🚀 Major Changes
 
 ### Architecture Migration
-- ❌ **Removed:** Google Apps Script backend
-- ❌ **Removed:** Google Sheets database
+- ❌ **Removed:** Legacy backend
+- ❌ **Removed:** Cloud spreadsheet database
 - ✅ **Added:** IndexedDB for local data storage
 - ✅ **Added:** 100% offline-first architecture
 
@@ -28,7 +28,7 @@
 
 ### Before (v3.x)
 ```
-React 19 + Google Apps Script + Google Sheets
+React 19 + Legacy Backend
 - Online only
 - Backend dependent
 - Network latency
@@ -47,7 +47,7 @@ React 19 + IndexedDB + shadcn/ui
 
 ## 🗄️ Database Changes
 
-### Old Schema (Google Sheets)
+### Old Schema (Cloud Spreadsheet)
 - Data_Menu
 - Data_User
 - Riwayat_Transaksi
@@ -123,7 +123,7 @@ React 19 + IndexedDB + shadcn/ui
 
 ## 🗑️ Removed Files
 
-### Backend
+### Legacy Backend
 - `backend/Code.gs`
 - `backend/appsscript.json`
 - `.clasp.json`
@@ -370,7 +370,7 @@ Passcode: admin123
 - ✅ Build: Passing (3.84s)
 - ✅ Tests: Configured
 - ✅ Docs: Source of truth established
-- ✅ GAS: 100% removed
+- ✅ Backend: 100% removed
 - ✅ Push to GitHub: Successful
 - ✅ PWA: Working offline
 - ✅ UI: Modern & responsive

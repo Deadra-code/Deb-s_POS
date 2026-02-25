@@ -46,27 +46,6 @@ const ProductForm = ({ initialData, onSubmit, loading }) => {
         }
     }, [initialData]);
 
-    const handleAddGroup = () => {
-        setVariantGroups([...variantGroups, { name: '', options: [] }]);
-    };
-
-    const handleRemoveGroup = (index) => {
-        setVariantGroups(variantGroups.filter((_, i) => i !== index));
-    };
-
-    const handleGroupChange = (index, field, value) => {
-        const newGroups = [...variantGroups];
-        if (field === 'name') {
-            newGroups[index].name = value;
-        } else if (field === 'options') {
-            // Split by comma and trim
-            const raw = value.split(',');
-            const trimmed = raw.map(o => o.trim());
-            newGroups[index].options = trimmed.filter(o => o !== '');
-        }
-        setVariantGroups(newGroups);
-    };
-
     const handleFormSubmit = (e) => {
         e.preventDefault();
         // Convert groups back to string

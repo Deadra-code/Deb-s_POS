@@ -232,16 +232,16 @@ await restoreData(backup);
 
 ## 📚 Documentation
 
+All documentation is located in the `docs/` folder. See [docs/INDEX.md](./docs/INDEX.md) for the complete documentation index.
+
+### Key Documents
+
 | Document | Description |
 |----------|-------------|
-| [OFFLINE_MIGRATION.md](./OFFLINE_MIGRATION.md) | Migration guide from GAS to IndexedDB |
-| [MIGRATION_COMPLETE.md](./MIGRATION_COMPLETE.md) | Complete migration summary |
-| [docs/INDEX.md](./docs/INDEX.md) | Documentation index |
-| [docs/API.md](./docs/API.md) | API reference |
-| [docs/DATABASE.md](./docs/DATABASE.md) | Database schema |
-| [docs/COMPONENTS.md](./docs/COMPONENTS.md) | Component guide |
-| [docs/TESTING.md](./docs/TESTING.md) | Testing guide |
-| [docs/TROUBLESHOOTING.md](./docs/TROUBLESHOOTING.md) | Troubleshooting |
+| [docs/INDEX.md](./docs/INDEX.md) | Documentation index & navigation |
+| [docs/OFFLINE_MIGRATION.md](./docs/OFFLINE_MIGRATION.md) | Migration guide to IndexedDB |
+| [docs/MIGRATION_COMPLETE.md](./docs/MIGRATION_COMPLETE.md) | Complete migration summary |
+| [docs/TROUBLESHOOTING.md](./docs/TROUBLESHOOTING.md) | Troubleshooting guide |
 
 ---
 
@@ -350,7 +350,7 @@ MIT
 | Version | Date | Changes |
 |---------|------|---------|
 | 4.0.0 | 2026-02-25 | Migrated to IndexedDB (offline-first) |
-| 3.15.1 | 2026-02-24 | Last GAS version |
+| 3.15.1 | 2026-02-24 | Previous version |
 
 ---
 

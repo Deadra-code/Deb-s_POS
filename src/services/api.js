@@ -61,7 +61,7 @@ export const clearCache = (action) => {
 };
 
 /**
- * Helper function to fetch data from the Google Apps Script backend.
+ * Helper function to fetch data from the backend.
  * @param {string} action - The action to perform (e.g., 'getMenu', 'saveOrder').
  * @param {string} method - The HTTP method (GET or POST).
  * @param {object|null} body - The request body for POST requests.

@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 'use client';
 
 import * as React from 'react';
@@ -10,7 +11,7 @@ export function useToast() {
 
   const toast = React.useCallback(({ title, description, variant, duration = 3000, onDismiss }) => {
     const id = Math.random().toString(36).substr(2, 9);
-    
+
     setToasts((prevToasts) => [...prevToasts, { id, title, description, variant }]);
 
     if (duration !== null) {
@@ -55,7 +56,7 @@ export function Toaster() {
 import { Toast, ToastTitle, ToastDescription, ToastClose } from '../components/ui/Toast';
 import { cn } from '../lib/utils';
 
-function ToastComponent({ id, title, description, variant, onDismiss }) {
+function ToastComponent({ title, description, variant, onDismiss }) {
   return (
     <Toast variant={variant}>
       <div className="grid gap-1">
