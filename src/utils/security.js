@@ -32,5 +32,5 @@ export const verifyPasscode = async (passcode, hash) => {
  * @returns {boolean} - True if already hashed
  */
 export const isHashed = (str) => {
-    return str && str.startsWith('$2a$') || str.startsWith('$2b$');
+    return str && (str.startsWith('$2a$') || str.startsWith('$2b$'));
 };

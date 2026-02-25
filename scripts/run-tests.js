@@ -4,17 +4,16 @@
  * Comprehensive Test Runner for Deb's POS
  * Runs all tests with coverage report
  * Usage: node scripts/run-tests.js [options]
- * 
- * Options:
- *   --unit       Run only unit tests
- *   --e2e        Run only E2E tests
- *   --coverage   Generate coverage report (default)
- *   --watch      Run tests in watch mode
- *   --ci         Run in CI mode (no coverage, single run)
  */
 
-const { execSync } = require('child_process');
-const path = require('path');
+import { execSync } from 'child_process';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import fs from 'fs';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const ROOT_DIR = path.join(__dirname, '..');
 
 const args = process.argv.slice(2);
 const isCI = process.env.CI === 'true' || args.includes('--ci');
@@ -22,8 +21,6 @@ const watchMode = args.includes('--watch');
 const unitOnly = args.includes('--unit');
 const e2eOnly = args.includes('--e2e');
 const noCoverage = args.includes('--no-coverage');
-
-const ROOT_DIR = path.join(__dirname, '..');
 
 /**
  * Run command and handle output
@@ -51,10 +48,10 @@ function runCommand(command, description) {
  * Run unit tests with vitest
  */
 function runUnitTests() {
-    let command = 'npx vitest run';
+    let command = 'node node_modules/vitest/vitest.mjs run';
 
     if (watchMode) {
-        command = 'npx vitest --watch';
+        command = 'node node_modules/vitest/vitest.mjs --watch';
     }
 
     if (!noCoverage && !watchMode && !isCI) {
@@ -72,7 +69,7 @@ function runUnitTests() {
  * Run E2E tests with Playwright
  */
 function runE2ETests() {
-    let command = 'npx playwright test';
+    let command = 'node node_modules/@playwright/test/cli.js test';
 
     if (isCI) {
         command += ' --reporter=list,html,junit --output=reports/playwright';
@@ -95,8 +92,6 @@ function generateCoverageSummary() {
     console.log('='.repeat(60));
 
     try {
-        // Try to read coverage summary
-        const fs = require('fs');
         if (fs.existsSync(coverageFile)) {
             const summary = JSON.parse(fs.readFileSync(coverageFile, 'utf8'));
             const total = summary.total;
@@ -107,7 +102,6 @@ function generateCoverageSummary() {
             console.log(`   Functions:    ${total.functions.pct.toFixed(1)}%`);
             console.log(`   Lines:        ${total.lines.pct.toFixed(1)}%`);
 
-            // Check if coverage meets threshold
             const minCoverage = 70;
             const avgCoverage = (
                 total.statements.pct +
@@ -123,7 +117,6 @@ function generateCoverageSummary() {
                 console.log(`   Current: ${avgCoverage.toFixed(1)}%`);
             }
 
-            // Open HTML report
             const htmlReport = path.join(coverageDir, 'index.html');
             if (fs.existsSync(htmlReport)) {
                 console.log(`\n📄 HTML Report: ${htmlReport}`);
@@ -147,24 +140,20 @@ async function runTests() {
     const startTime = Date.now();
     let allPassed = true;
 
-    // Determine which tests to run
     if (e2eOnly) {
         allPassed = runE2ETests();
     } else if (unitOnly) {
         allPassed = runUnitTests();
     } else {
-        // Run both unit and E2E tests
         const unitPassed = runUnitTests();
         const e2ePassed = runE2ETests();
         allPassed = unitPassed && e2ePassed;
     }
 
-    // Generate coverage summary
     if (!noCoverage && !watchMode && !isCI && !e2eOnly) {
-        generateCoverageSummary();
+        await generateCoverageSummary();
     }
 
-    // Print final summary
     const duration = ((Date.now() - startTime) / 1000).toFixed(2);
 
     console.log(`\n${'='.repeat(60)}`);
@@ -177,7 +166,6 @@ async function runTests() {
     process.exit(allPassed ? 0 : 1);
 }
 
-// Run tests
 runTests().catch(err => {
     console.error('❌ Test runner failed:', err.message);
     process.exit(1);

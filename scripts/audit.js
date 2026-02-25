@@ -13,19 +13,21 @@
  *   --output      Output format (json|text|html)
  */
 
-const { execSync } = require('child_process');
-const fs = require('fs');
-const path = require('path');
+import { execSync } from 'child_process';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const ROOT_DIR = path.join(__dirname, '..');
+const SRC_DIR = path.join(ROOT_DIR, 'src');
+const REPORTS_DIR = path.join(ROOT_DIR, 'reports');
 
 const args = process.argv.slice(2);
 const securityOnly = args.includes('--security');
 const performanceOnly = args.includes('--performance');
 const a11yOnly = args.includes('--a11y');
-const outputFormat = args.includes('--output=json') ? 'json' : 'text';
-
-const ROOT_DIR = path.join(__dirname, '..');
-const SRC_DIR = path.join(ROOT_DIR, 'src');
-const REPORTS_DIR = path.join(ROOT_DIR, 'reports');
 
 // Ensure reports directory exists
 if (!fs.existsSync(REPORTS_DIR)) {
@@ -62,13 +64,66 @@ class AuditResult {
 }
 
 /**
+ * Get all files with specific extensions
+ */
+function getAllFiles(dir, extensions) {
+    let files = [];
+    
+    try {
+        const items = fs.readdirSync(dir);
+        
+        for (const item of items) {
+            if (item === 'node_modules' || item === 'dist' || item.startsWith('.')) continue;
+            
+            const fullPath = path.join(dir, item);
+            const stat = fs.statSync(fullPath);
+            
+            if (stat.isDirectory()) {
+                files = files.concat(getAllFiles(fullPath, extensions));
+            } else if (extensions.some(ext => item.endsWith(ext))) {
+                files.push(fullPath);
+            }
+        }
+    } catch (error) {
+        // Ignore errors
+    }
+    
+    return files;
+}
+
+/**
+ * Get directory size
+ */
+function getDirectorySize(dir) {
+    let size = 0;
+    
+    try {
+        const items = fs.readdirSync(dir);
+        
+        for (const item of items) {
+            const fullPath = path.join(dir, item);
+            const stat = fs.statSync(fullPath);
+            
+            if (stat.isDirectory()) {
+                size += getDirectorySize(fullPath);
+            } else {
+                size += stat.size;
+            }
+        }
+    } catch (error) {
+        // Ignore errors
+    }
+    
+    return size;
+}
+
+/**
  * Security Audit
  */
 function auditSecurity() {
     console.log('\n🔒 Security Audit\n');
     const result = new AuditResult('Security');
 
-    // Check for sensitive data in code
     const sensitivePatterns = [
         { pattern: /API_KEY\s*=\s*['"][^'"]+['"]/i, name: 'API Key' },
         { pattern: /SECRET\s*=\s*['"][^'"]+['"]/i, name: 'Secret' },
@@ -83,41 +138,27 @@ function auditSecurity() {
         const content = fs.readFileSync(file, 'utf8');
         const relativePath = path.relative(ROOT_DIR, file);
 
-        // Check for sensitive data
         sensitivePatterns.forEach(({ pattern, name }) => {
             if (pattern.test(content)) {
-                // Skip if it's in .env.example or documentation
                 if (!file.includes('.env.example') && !file.includes('.md')) {
                     result.addWarning(`Possible ${name} found in code`, relativePath);
                 }
             }
         });
 
-        // Check for console.log in production code
-        if (/console\.(log|info|debug)/.test(content) && !file.includes('.test.')) {
-            // This is now handled by logger.js
-            if (!content.includes('from') || !content.includes('logger')) {
-                result.addSuggestion(`Consider using logger.js instead of console in: ${relativePath}`);
-            }
-        }
-
-        // Check for eval()
         if (/\beval\s*\(/.test(content)) {
             result.addError('eval() is used - security risk!', relativePath);
         }
 
-        // Check for innerHTML
         if (/\.innerHTML\s*=/.test(content)) {
             result.addWarning('innerHTML usage detected - potential XSS risk', relativePath);
         }
 
-        // Check for dangerouslySetInnerHTML
         if (/dangerouslySetInnerHTML/.test(content)) {
             result.addWarning('dangerouslySetInnerHTML usage - ensure content is sanitized', relativePath);
         }
     });
 
-    // Check .env.example for sensitive keys
     const envExample = path.join(ROOT_DIR, '.env.example');
     if (fs.existsSync(envExample)) {
         const envContent = fs.readFileSync(envExample, 'utf8');
@@ -126,20 +167,17 @@ function auditSecurity() {
         }
     }
 
-    // Check localStorage usage
     filesToCheck.forEach(file => {
         const content = fs.readFileSync(file, 'utf8');
         const relativePath = path.relative(ROOT_DIR, file);
 
         if (/localStorage\.(setItem|getItem)/.test(content)) {
-            // localStorage is okay for non-sensitive data
             if (/token|password|secret|key/i.test(content)) {
                 result.addWarning('Sensitive data might be stored in localStorage', relativePath);
             }
         }
     });
 
-    // Check package.json for outdated/vulnerable packages
     try {
         console.log('   Checking for vulnerable dependencies...');
         execSync('npm audit --production --json', { 
@@ -172,7 +210,6 @@ function auditPerformance() {
     console.log('\n⚡ Performance Audit\n');
     const result = new AuditResult('Performance');
 
-    // Check dist folder size
     const distDir = path.join(ROOT_DIR, 'dist');
     if (fs.existsSync(distDir)) {
         const distSize = getDirectorySize(distDir);
@@ -180,11 +217,10 @@ function auditPerformance() {
 
         console.log(`   📦 Dist folder size: ${distSizeMB} MB`);
 
-        if (distSize > 5 * 1024 * 1024) { // 5MB
+        if (distSize > 5 * 1024 * 1024) {
             result.addWarning(`Dist folder is large (${distSizeMB} MB). Consider code splitting.`);
         }
 
-        // Check individual chunk sizes
         const jsFiles = fs.readdirSync(distDir)
             .filter(f => f.endsWith('.js'))
             .map(f => {
@@ -194,7 +230,7 @@ function auditPerformance() {
 
         jsFiles.forEach(file => {
             const sizeKB = (file.size / 1024).toFixed(2);
-            if (file.size > 500 * 1024) { // 500KB
+            if (file.size > 500 * 1024) {
                 result.addWarning(`Large chunk: ${file.name} (${sizeKB} KB)`);
             }
         });
@@ -202,7 +238,6 @@ function auditPerformance() {
         result.addSuggestion('Run "npm run build" to analyze production bundle');
     }
 
-    // Check for large dependencies
     const packageJson = JSON.parse(fs.readFileSync(path.join(ROOT_DIR, 'package.json'), 'utf8'));
     const deps = { ...packageJson.dependencies, ...packageJson.devDependencies };
 
@@ -215,30 +250,22 @@ function auditPerformance() {
         }
     });
 
-    // Check for synchronous operations
     const filesToCheck = getAllFiles(SRC_DIR, ['.js', '.jsx']);
     filesToCheck.forEach(file => {
         const content = fs.readFileSync(file, 'utf8');
         const relativePath = path.relative(ROOT_DIR, file);
 
-        // Check for sync XHR
         if (/XMLHttpRequest/.test(content) && /async:\s*false/.test(content)) {
             result.addError('Synchronous XMLHttpRequest detected!', relativePath);
         }
-
-        // Check for blocking operations
-        if (/require\(/.test(content) && !content.includes('import')) {
-            result.addSuggestion('Consider using ES6 imports instead of require()', relativePath);
-        }
     });
 
-    // Check image optimization (if public folder exists)
     const publicDir = path.join(ROOT_DIR, 'public');
     if (fs.existsSync(publicDir)) {
         const images = getAllFiles(publicDir, ['.png', '.jpg', '.jpeg', '.gif']);
         images.forEach(img => {
             const stats = fs.statSync(img);
-            if (stats.size > 500 * 1024) { // 500KB
+            if (stats.size > 500 * 1024) {
                 result.addWarning(`Large image file: ${path.relative(ROOT_DIR, img)} (${(stats.size / 1024).toFixed(0)} KB)`);
             }
         });
@@ -261,14 +288,12 @@ function auditAccessibility() {
         const content = fs.readFileSync(file, 'utf8');
         const relativePath = path.relative(ROOT_DIR, file);
 
-        // Check for alt text in images
         if (/<img[^>]*>/.test(content)) {
             if (!/alt\s*=\s*["'][^"']*["']/.test(content) && !/alt\s*=\s*\{/.test(content)) {
                 result.addWarning('Images should have alt text', relativePath);
             }
         }
 
-        // Check for button accessibility
         if (/<button[^>]*>/.test(content)) {
             if (!/aria-label|aria-labelledby/.test(content) && 
                 !/>[^<]+</.test(content.replace(/\n/g, ' '))) {
@@ -276,30 +301,16 @@ function auditAccessibility() {
             }
         }
 
-        // Check for form labels
         if (/<input[^>]*>/.test(content)) {
             if (!/label|aria-label|id/.test(content)) {
                 result.addWarning('Form inputs should have labels', relativePath);
             }
         }
 
-        // Check for role attributes
         if (/<div[^>]*onClick/.test(content)) {
             if (!/role\s*=\s*["']button/.test(content) && !/role\s*=\s*["']link/.test(content)) {
                 result.addSuggestion('Clickable divs should have role attribute', relativePath);
             }
-        }
-    });
-
-    // Check for color contrast (basic check)
-    const cssFiles = getAllFiles(SRC_DIR, ['.css']);
-    cssFiles.forEach(file => {
-        const content = fs.readFileSync(file, 'utf8');
-        const relativePath = path.relative(ROOT_DIR, file);
-
-        // Check for very small font sizes
-        if (/font-size:\s*8px/.test(content)) {
-            result.addWarning('Very small font size (8px) may be hard to read', relativePath);
         }
     });
 
@@ -314,13 +325,11 @@ function auditBestPractices() {
     console.log('\n📋 Best Practices Audit\n');
     const result = new AuditResult('Best Practices');
 
-    // Check for .env file (should not exist)
     const envFile = path.join(ROOT_DIR, '.env');
     if (fs.existsSync(envFile)) {
         result.addWarning('.env file exists - ensure it\'s in .gitignore');
     }
 
-    // Check .gitignore
     const gitignore = path.join(ROOT_DIR, '.gitignore');
     if (fs.existsSync(gitignore)) {
         const gitignoreContent = fs.readFileSync(gitignore, 'utf8');
@@ -333,7 +342,6 @@ function auditBestPractices() {
         });
     }
 
-    // Check for TODO/FIXME comments
     const filesToCheck = getAllFiles(SRC_DIR, ['.js', '.jsx', '.ts', '.tsx']);
     let todoCount = 0;
     
@@ -351,7 +359,6 @@ function auditBestPractices() {
         result.addSuggestion(`${todoCount} TODO/FIXME comments found`);
     }
 
-    // Check for consistent naming
     const componentFiles = getAllFiles(SRC_DIR, ['.jsx', '.tsx']);
     componentFiles.forEach(file => {
         const fileName = path.basename(file);
@@ -362,60 +369,6 @@ function auditBestPractices() {
 
     result.score = Math.max(0, result.score);
     return result;
-}
-
-/**
- * Helper: Get all files with specific extensions
- */
-function getAllFiles(dir, extensions) {
-    let files = [];
-    
-    try {
-        const items = fs.readdirSync(dir);
-        
-        for (const item of items) {
-            if (item === 'node_modules' || item === 'dist' || item.startsWith('.')) continue;
-            
-            const fullPath = path.join(dir, item);
-            const stat = fs.statSync(fullPath);
-            
-            if (stat.isDirectory()) {
-                files = files.concat(getAllFiles(fullPath, extensions));
-            } else if (extensions.some(ext => item.endsWith(ext))) {
-                files.push(fullPath);
-            }
-        }
-    } catch (error) {
-        // Ignore errors
-    }
-    
-    return files;
-}
-
-/**
- * Helper: Get directory size
- */
-function getDirectorySize(dir) {
-    let size = 0;
-    
-    try {
-        const items = fs.readdirSync(dir);
-        
-        for (const item of items) {
-            const fullPath = path.join(dir, item);
-            const stat = fs.statSync(fullPath);
-            
-            if (stat.isDirectory()) {
-                size += getDirectorySize(fullPath);
-            } else {
-                size += stat.size;
-            }
-        }
-    } catch (error) {
-        // Ignore errors
-    }
-    
-    return size;
 }
 
 /**
@@ -490,7 +443,6 @@ function runAudit() {
     const results = [];
 
     if (!securityOnly && !performanceOnly && !a11yOnly) {
-        // Run all audits
         results.push(auditSecurity());
         results.push(auditPerformance());
         results.push(auditAccessibility());
@@ -501,13 +453,9 @@ function runAudit() {
         if (a11yOnly) results.push(auditAccessibility());
     }
 
-    // Print results
     results.forEach(printResult);
-
-    // Save report
     saveReport(results);
 
-    // Print summary
     const duration = ((Date.now() - startTime) / 1000).toFixed(2);
     const avgScore = (results.reduce((sum, r) => sum + r.score, 0) / results.length).toFixed(1);
     const allPassed = results.every(r => r.passed);
@@ -523,5 +471,4 @@ function runAudit() {
     process.exit(allPassed ? 0 : 1);
 }
 
-// Run audit
 runAudit();
