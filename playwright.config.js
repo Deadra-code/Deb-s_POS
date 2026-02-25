@@ -8,7 +8,7 @@ export default defineConfig({
     workers: 1,
     reporter: 'html',
     use: {
-        baseURL: 'http://localhost:5173/Deb-s_POS/',
+        baseURL: 'http://localhost:5173',
         trace: 'on-first-retry',
     },
     projects: [
@@ -22,8 +22,8 @@ export default defineConfig({
         },
     ],
     webServer: {
-        command: 'npm run dev',
-        url: 'http://localhost:5173/Deb-s_POS/',
+        command: 'npx vite',
+        url: 'http://localhost:5173',
         reuseExistingServer: !process.env.CI,
         timeout: 120000,
     },

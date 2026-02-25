@@ -1,19 +1,18 @@
 #!/usr/bin/env node
 
 /**
- * Backup Automation Script for Deb's POS
- * 
- * Downloads Google Sheets data as backup
- * Usage: node scripts/backup-data.js
+ * Backup Automation Script for Deb's POS v4+
+ *
+ * Exports IndexedDB data to JSON backup files
+ * Usage: node scripts/backup-data.js [export|import|list]
  */
 
-const https = require('https');
 const fs = require('fs');
 const path = require('path');
 
 // Configuration
 const BACKUP_DIR = path.join(__dirname, '..', 'backups');
-const SHEETS_URL = 'https://docs.google.com/spreadsheets/d/{YOUR_SHEET_ID}/export?format=xlsx';
+const DEFAULT_BACKUP_FILE = path.join(BACKUP_DIR, 'debs-pos-backup.json');
 
 /**
  * Ensure backup directory exists
@@ -34,109 +33,224 @@ function getTimestamp() {
 }
 
 /**
- * Download file from URL
+ * Export data from IndexedDB (to be run in browser console)
+ * This generates a script that users can paste in browser console
  */
-function downloadFile(url, dest) {
-    return new Promise((resolve, reject) => {
-        const file = fs.createWriteStream(dest);
-        
-        https.get(url, (response) => {
-            if (response.statusCode !== 200) {
-                reject(new Error(`Download failed: ${response.statusCode}`));
-                return;
-            }
-            
-            response.pipe(file);
-            
-            file.on('finish', () => {
-                file.close();
-                resolve(dest);
-            });
-        }).on('error', (err) => {
-            fs.unlink(dest, () => {});
-            reject(err);
+function generateExportScript() {
+    const script = `
+// Deb's POS v4 - Data Export Script
+// Paste this in browser console (F12) on the app page
+
+(async function exportData() {
+    const DB_NAME = 'debs-pos-db';
+    const DB_VERSION = 1;
+
+    function openDB() {
+        return new Promise((resolve, reject) => {
+            const request = indexedDB.open(DB_NAME, DB_VERSION);
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = () => reject(request.error);
         });
-    });
-}
-
-/**
- * Create JSON backup of local data (from localStorage export)
- */
-function createLocalBackup() {
-    const backupData = {
-        timestamp: new Date().toISOString(),
-        version: '3.15.1',
-        note: 'Export localStorage data manually via browser console'
-    };
-    
-    const backupPath = path.join(BACKUP_DIR, `local-backup-${getTimestamp()}.json`);
-    fs.writeFileSync(backupPath, JSON.stringify(backupData, null, 2));
-    console.log('✓ Created local backup template:', backupPath);
-    
-    return backupPath;
-}
-
-/**
- * Clean old backups (keep last 30 days)
- */
-function cleanOldBackups(daysToKeep = 30) {
-    const files = fs.readdirSync(BACKUP_DIR);
-    const now = Date.now();
-    const maxAge = daysToKeep * 24 * 60 * 60 * 1000;
-    
-    let cleaned = 0;
-    
-    files.forEach(file => {
-        if (!file.includes('backup')) return;
-        
-        const filePath = path.join(BACKUP_DIR, file);
-        const stats = fs.statSync(filePath);
-        const age = now - stats.mtimeMs;
-        
-        if (age > maxAge) {
-            fs.unlinkSync(filePath);
-            cleaned++;
-            console.log(`  Deleted old backup: ${file}`);
-        }
-    });
-    
-    if (cleaned > 0) {
-        console.log(`✓ Cleaned ${cleaned} old backup(s)`);
     }
+
+    function getAllFromStore(db, storeName) {
+        return new Promise((resolve, reject) => {
+            const tx = db.transaction(storeName, 'readonly');
+            const store = tx.objectStore(storeName);
+            const request = store.getAll();
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = () => reject(request.error);
+        });
+    }
+
+    try {
+        const db = await openDB();
+        const stores = ['products', 'orders', 'settings', 'users'];
+        const backup = {
+            version: '4.0.0',
+            timestamp: new Date().toISOString(),
+            data: {}
+        };
+
+        for (const store of stores) {
+            backup.data[store] = await getAllFromStore(db, store);
+            console.log('Exported', backup.data[store].length, 'records from', store);
+        }
+
+        const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'debs-pos-backup-' + new Date().toISOString().slice(0, 10) + '.json';
+        a.click();
+        URL.revokeObjectURL(url);
+        
+        console.log('✅ Backup exported successfully!');
+    } catch (err) {
+        console.error('❌ Export failed:', err);
+    }
+})();
+`;
+
+    const scriptPath = path.join(BACKUP_DIR, 'export-in-browser.js');
+    fs.writeFileSync(scriptPath, script);
+    console.log('✓ Generated browser export script:', scriptPath);
+    return scriptPath;
 }
 
 /**
- * Main backup function
+ * Validate backup file structure
  */
-async function runBackup() {
-    console.log('🔄 Starting backup process...\n');
+function validateBackup(backupData) {
+    const required = ['version', 'timestamp', 'data'];
+    const requiredStores = ['products', 'orders', 'settings', 'users'];
+
+    for (const field of required) {
+        if (!backupData[field]) {
+            throw new Error(`Missing required field: ${field}`);
+        }
+    }
+
+    for (const store of requiredStores) {
+        if (!Array.isArray(backupData.data[store])) {
+            throw new Error(`Invalid or missing store: ${store}`);
+        }
+    }
+
+    return true;
+}
+
+/**
+ * List existing backups
+ */
+function listBackups() {
+    if (!fs.existsSync(BACKUP_DIR)) {
+        console.log('No backup directory found.');
+        return [];
+    }
+
+    const files = fs.readdirSync(BACKUP_DIR)
+        .filter(f => f.endsWith('.json'))
+        .map(f => {
+            const filePath = path.join(BACKUP_DIR, f);
+            const stats = fs.statSync(filePath);
+            const size = (stats.size / 1024).toFixed(2);
+            return { name: f, size: `${size} KB`, date: stats.mtime.toISOString() };
+        })
+        .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    console.log('\n📦 Available Backups:\n');
+    console.log('File'.padEnd(40) + 'Size'.padEnd(12) + 'Created');
+    console.log('─'.repeat(70));
     
+    files.forEach(f => {
+        console.log(f.name.padEnd(40) + f.size.padEnd(12) + f.date.slice(0, 10));
+    });
+
+    console.log('');
+    return files;
+}
+
+/**
+ * Clean old backups (keep last N files)
+ */
+function cleanOldBackups(keepCount = 10) {
+    if (!fs.existsSync(BACKUP_DIR)) return 0;
+
+    const files = fs.readdirSync(BACKUP_DIR)
+        .filter(f => f.endsWith('.json'))
+        .map(f => ({
+            name: f,
+            path: path.join(BACKUP_DIR, f),
+            mtime: fs.statSync(path.join(BACKUP_DIR, f)).mtimeMs
+        }))
+        .sort((a, b) => b.mtime - a.mtime);
+
+    let deleted = 0;
+    files.slice(keepCount).forEach(file => {
+        fs.unlinkSync(file.path);
+        deleted++;
+        console.log(`  Deleted: ${file.name}`);
+    });
+
+    if (deleted > 0) {
+        console.log(`✓ Cleaned ${deleted} old backup(s), kept ${Math.min(files.length, keepCount)} recent`);
+    }
+    return deleted;
+}
+
+/**
+ * Show import instructions
+ */
+function showImportInstructions() {
+    console.log('\n📥 To import backup data:\n');
+    console.log('1. Open Deb\'s POS in your browser');
+    console.log('2. Open browser console (F12)');
+    console.log('3. Paste the following code:\n');
+    console.log(`
+// Import backup data
+const backupFile = '${DEFAULT_BACKUP_FILE}';
+// Use file input in app: Settings > Backup & Restore > Import
+// Or paste this in console:
+(async function importBackup() {
+    const DB_NAME = 'debs-pos-db';
+    const backup = ${JSON.stringify({ example: 'paste your backup JSON here' })};
+    
+    // Use the app's import function via UI
+    console.log('Please use Settings > Backup & Restore > Import in the app');
+})();
+`);
+}
+
+/**
+ * Main function
+ */
+function runBackup(command = 'export') {
+    console.log('🔄 Deb\'s POS Backup Utility v4.0.0\n');
+
     ensureBackupDir();
-    
-    // Create local backup template
-    createLocalBackup();
-    
-    // Note about Google Sheets backup
-    console.log('\n📋 Manual Backup Instructions:');
-    console.log('1. Buka Google Sheets Anda');
-    console.log('2. File > Download > Microsoft Excel (.xlsx)');
-    console.log('3. Simpan di folder backups/ dengan nama: deb-pos-backup-{timestamp}.xlsx');
-    console.log('\n💡 Atau gunakan Google Drive automatic backup:');
-    console.log('   File > Share > Automate > Schedule backup');
-    
-    // Clean old backups
-    console.log('\n🧹 Cleaning old backups...');
-    cleanOldBackups(30);
-    
-    console.log('\n✅ Backup process completed!\n');
+
+    switch (command) {
+        case 'export':
+            console.log('📤 Generating export script...\n');
+            generateExportScript();
+            console.log('\n📋 To create backup:');
+            console.log('1. Open Deb\'s POS in browser');
+            console.log('2. Open console (F12)');
+            console.log('3. Copy-paste content from: backups/export-in-browser.js');
+            console.log('4. Press Enter - backup will download automatically');
+            break;
+
+        case 'list':
+            listBackups();
+            break;
+
+        case 'import':
+            showImportInstructions();
+            break;
+
+        case 'clean':
+            console.log('🧹 Cleaning old backups...\n');
+            cleanOldBackups(10);
+            break;
+
+        default:
+            console.log('Usage: node scripts/backup-data.js [export|import|list|clean]');
+            console.log('\nCommands:');
+            console.log('  export  - Generate browser script to export IndexedDB data');
+            console.log('  import  - Show import instructions');
+            console.log('  list    - List existing backup files');
+            console.log('  clean   - Remove old backups (keep last 10)');
+            console.log('\n💡 In the app: Settings > Backup & Restore');
+    }
+
+    console.log('');
 }
 
 // Run if called directly
 if (require.main === module) {
-    runBackup().catch(err => {
-        console.error('❌ Backup failed:', err.message);
-        process.exit(1);
-    });
+    const command = process.argv[2] || 'export';
+    runBackup(command);
 }
 
-module.exports = { runBackup, ensureBackupDir, cleanOldBackups };
+module.exports = { runBackup, ensureBackupDir, listBackups, cleanOldBackups };

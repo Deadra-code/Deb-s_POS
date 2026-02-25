@@ -11,6 +11,8 @@ import {
   exportAllData,
   importAllData,
 } from './database';
+import { dispatchDbError } from '../utils/db-error-handler.js';
+import { error } from '../utils/logger.js';
 
 // ============ PRODUCTS ============
 
@@ -18,7 +20,8 @@ export const getProducts = async () => {
   try {
     return await getAll('products');
   } catch (err) {
-    console.error('Error fetching products:', err);
+    error('Error fetching products:', err);
+    dispatchDbError('fetch products', err);
     return [];
   }
 };
@@ -27,7 +30,8 @@ export const getProductById = async (id) => {
   try {
     return await getById('products', id);
   } catch (err) {
-    console.error('Error fetching product:', err);
+    error('Error fetching product:', err);
+    dispatchDbError('fetch product', err);
     return null;
   }
 };
@@ -40,7 +44,8 @@ export const saveProduct = async (product) => {
       return await add('products', product);
     }
   } catch (err) {
-    console.error('Error saving product:', err);
+    error('Error saving product:', err);
+    dispatchDbError('save product', err);
     throw err;
   }
 };
@@ -50,7 +55,8 @@ export const deleteProduct = async (id) => {
     await deleteRecord('products', id);
     return { success: true };
   } catch (err) {
-    console.error('Error deleting product:', err);
+    error('Error deleting product:', err);
+    dispatchDbError('delete product', err);
     throw err;
   }
 };
@@ -60,7 +66,8 @@ export const bulkSaveProducts = async (products) => {
     await bulkUpdate('products', products);
     return { success: true };
   } catch (err) {
-    console.error('Error bulk saving products:', err);
+    error('Error bulk saving products:', err);
+    dispatchDbError('bulk save products', err);
     throw err;
   }
 };
@@ -71,7 +78,8 @@ export const getOrders = async () => {
   try {
     return await getAll('orders');
   } catch (err) {
-    console.error('Error fetching orders:', err);
+    error('Error fetching orders:', err);
+    dispatchDbError('fetch orders', err);
     return [];
   }
 };
@@ -80,7 +88,8 @@ export const getOrderById = async (id) => {
   try {
     return await getById('orders', id);
   } catch (err) {
-    console.error('Error fetching order:', err);
+    error('Error fetching order:', err);
+    dispatchDbError('fetch order', err);
     return null;
   }
 };
@@ -89,7 +98,8 @@ export const getOrdersByDate = async (date) => {
   try {
     return await getByIndex('orders', 'tanggal', date);
   } catch (err) {
-    console.error('Error fetching orders by date:', err);
+    error('Error fetching orders by date:', err);
+    dispatchDbError('fetch orders by date', err);
     return [];
   }
 };
@@ -107,7 +117,8 @@ export const saveOrder = async (order) => {
 
     return await add('orders', order);
   } catch (err) {
-    console.error('Error saving order:', err);
+    error('Error saving order:', err);
+    dispatchDbError('save order', err);
     throw err;
   }
 };
@@ -121,7 +132,8 @@ export const updateOrderStatus = async (orderId, status) => {
     order.status = status;
     return await update('orders', order);
   } catch (err) {
-    console.error('Error updating order status:', err);
+    error('Error updating order status:', err);
+    dispatchDbError('update order status', err);
     throw err;
   }
 };
@@ -136,7 +148,8 @@ export const getSettings = async () => {
       return acc;
     }, {});
   } catch (err) {
-    console.error('Error fetching settings:', err);
+    error('Error fetching settings:', err);
+    dispatchDbError('fetch settings', err);
     return {
       store_name: "Deb's Kitchen",
       tax_rate: '0',
@@ -150,7 +163,8 @@ export const saveSetting = async (key, value) => {
   try {
     return await update('settings', { key, value });
   } catch (err) {
-    console.error('Error saving setting:', err);
+    error('Error saving setting:', err);
+    dispatchDbError('save setting', err);
     throw err;
   }
 };
@@ -163,7 +177,8 @@ export const saveSettings = async (settings) => {
     await Promise.all(promises);
     return { success: true };
   } catch (err) {
-    console.error('Error saving settings:', err);
+    error('Error saving settings:', err);
+    dispatchDbError('save settings', err);
     throw err;
   }
 };
@@ -174,7 +189,8 @@ export const getUsers = async () => {
   try {
     return await getAll('users');
   } catch (err) {
-    console.error('Error fetching users:', err);
+    error('Error fetching users:', err);
+    dispatchDbError('fetch users', err);
     return [];
   }
 };
@@ -183,7 +199,8 @@ export const addUser = async (user) => {
   try {
     return await add('users', user);
   } catch (err) {
-    console.error('Error adding user:', err);
+    error('Error adding user:', err);
+    dispatchDbError('add user', err);
     throw err;
   }
 };
@@ -192,7 +209,8 @@ export const updateUser = async (user) => {
   try {
     return await update('users', user);
   } catch (err) {
-    console.error('Error updating user:', err);
+    error('Error updating user:', err);
+    dispatchDbError('update user', err);
     throw err;
   }
 };
@@ -202,7 +220,8 @@ export const deleteUser = async (username) => {
     await deleteRecord('users', username);
     return { success: true };
   } catch (err) {
-    console.error('Error deleting user:', err);
+    error('Error deleting user:', err);
+    dispatchDbError('delete user', err);
     throw err;
   }
 };
@@ -214,7 +233,8 @@ export const backupData = async () => {
     const data = await exportAllData();
     return data;
   } catch (err) {
-    console.error('Error backing up data:', err);
+    error('Error backing up data:', err);
+    dispatchDbError('backing up data', err);
     throw err;
   }
 };
@@ -224,7 +244,8 @@ export const restoreData = async (backupData) => {
     await importAllData(backupData);
     return { success: true };
   } catch (err) {
-    console.error('Error restoring data:', err);
+    error('Error restoring data:', err);
+    dispatchDbError('restoring data', err);
     throw err;
   }
 };
@@ -291,7 +312,7 @@ export const getSalesReport = async (startDate, endDate) => {
       topItems,
     };
   } catch (err) {
-    console.error('Error fetching sales report:', err);
+    error('Error fetching sales report:', err);
     return {
       transactions: [],
       totalRevenue: 0,
@@ -307,7 +328,7 @@ export const getTopItems = async (limit = 10) => {
     const report = await getSalesReport();
     return report.topItems.slice(0, limit).map((item) => item.name);
   } catch (err) {
-    console.error('Error fetching top items:', err);
+    error('Error fetching top items:', err);
     return [];
   }
 };
@@ -319,7 +340,7 @@ export const initializeDatabase = async () => {
     await seedInitialData();
     return { success: true };
   } catch (err) {
-    console.error('Error initializing database:', err);
+    error('Error initializing database:', err);
     throw err;
   }
 };

@@ -3,6 +3,8 @@ import { useTheme } from '../context/ThemeContext';
 import { getAll } from '../services/database';
 import { Store, Package, ShoppingCart, Clock, ChefHat, Settings, LogOut, BarChart3, Sun, Moon } from '../components/ui/icons';
 import SettingsModal from '../components/SettingsModal';
+import DatabaseErrorListener from '../components/DatabaseErrorListener';
+import { createSessionTimeout } from '../utils/session-timeout';
 import Analytics from '../pages/Analytics';
 import POS from '../pages/POS';
 import Inventory from '../pages/Inventory';
@@ -10,7 +12,8 @@ import OrderHistory from '../pages/OrderHistory';
 import Kitchen from '../pages/Kitchen';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../components/ui/Button';
-import { Toaster } from '../hooks';
+import { Toaster, useToast } from '../hooks';
+import { error } from '../utils/logger.js';
 
 const NavItem = ({ id, icon: Icon, label, view, setView }) => (
   <button
@@ -46,6 +49,7 @@ const SidebarItem = ({ id, icon: Icon, label, view, setView }) => (
 
 const DashboardLayout = ({ view, setView, onLogout }) => {
   const { theme, toggleTheme } = useTheme();
+  const { toast } = useToast();
   const [menuData, setMenuData] = useState([]);
   const [setOpen, setSetOpen] = useState(false);
   const [menuLoading, setMenuLoading] = useState(true);
@@ -56,7 +60,7 @@ const DashboardLayout = ({ view, setView, onLogout }) => {
       const products = await getAll('products');
       setMenuData(products);
     } catch (err) {
-      console.error('Error loading menu:', err);
+      error('Error loading menu:', err);
     } finally {
       setMenuLoading(false);
     }
@@ -66,9 +70,45 @@ const DashboardLayout = ({ view, setView, onLogout }) => {
     refreshData();
   }, [refreshData]);
 
+  // Session timeout monitoring
+  useEffect(() => {
+    const session = createSessionTimeout({
+      timeout: 30 * 60 * 1000, // 30 minutes
+      warningBefore: 5 * 60 * 1000, // 5 minutes warning
+      onWarning: (secondsRemaining) => {
+        const minutes = Math.floor(secondsRemaining / 60);
+        const secs = secondsRemaining % 60;
+        toast({
+          title: 'Session Timeout Warning',
+          description: `Anda akan logout otomatis dalam ${minutes}:${secs.toString().padStart(2, '0')}. Lakukan aktivitas untuk tetap login.`,
+          variant: 'default',
+          duration: 5000,
+        });
+      },
+      onCleanup: () => {
+        toast({
+          title: 'Session Expired',
+          description: 'Sesi Anda telah berakhir karena tidak ada aktivitas. Silakan login kembali.',
+          variant: 'destructive',
+          duration: 5000,
+        });
+      },
+      onTimeout: () => {
+        localStorage.removeItem('POS_TOKEN');
+        localStorage.removeItem('POS_ROLE');
+        onLogout();
+      },
+    });
+
+    session.start();
+
+    return () => session.stop();
+  }, [onLogout, toast]);
+
   return (
     <>
       <Toaster />
+      <DatabaseErrorListener />
       <div className="flex flex-col font-sans bg-slate-50 dark:bg-slate-950 w-full h-screen text-slate-800 dark:text-slate-200 transition-colors duration-300">
         <div className="flex-1 overflow-hidden relative flex w-full">
           {/* Desktop Sidebar */}
