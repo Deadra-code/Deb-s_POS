@@ -38,7 +38,7 @@ function runCommand(command, description) {
             env: { ...process.env, FORCE_COLOR: '1' }
         });
         return true;
-    } catch (error) {
+    } catch (_error) {
         console.error(`\n❌ ${description} failed!`);
         return false;
     }
@@ -124,7 +124,7 @@ function generateCoverageSummary() {
         } else {
             console.log('⚠️  No coverage report found. Run with --coverage flag.');
         }
-    } catch (error) {
+    } catch (_error) {
         console.error('❌ Failed to generate coverage summary');
     }
 }

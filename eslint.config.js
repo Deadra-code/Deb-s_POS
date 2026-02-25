@@ -44,7 +44,7 @@ export default defineConfig([
       'react/jsx-uses-vars': 'error',
       'react/react-in-jsx-scope': 'off',
       'react/prop-types': 'off',
-      'no-unused-vars': ['warn', { varsIgnorePattern: '^[A-Z_]|doGet|doPost' }],
+      'no-unused-vars': ['warn', { varsIgnorePattern: '^[A-Z_]|^_|doGet|doPost' }],
       'react-refresh/only-export-components': [
         'warn',
         { allowConstantExport: true },

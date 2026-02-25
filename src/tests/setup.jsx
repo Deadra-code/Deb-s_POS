@@ -1,6 +1,30 @@
 import '@testing-library/jest-dom';
 import { vi } from 'vitest';
 
+// Mock IndexedDB for tests
+const mockIndexedDB = {
+    open: vi.fn(() => ({
+        onupgradeneeded: null,
+        onsuccess: null,
+        onerror: null,
+        result: {
+            transaction: vi.fn(() => ({
+                objectStore: vi.fn(() => ({
+                    getAll: vi.fn(() => ({ onsuccess: null, onerror: null, result: [] })),
+                    add: vi.fn(() => ({ onsuccess: null, onerror: null, result: 1 })),
+                    put: vi.fn(() => ({ onsuccess: null, onerror: null, result: 1 })),
+                    delete: vi.fn(() => ({ onsuccess: null, onerror: null })),
+                    get: vi.fn(() => ({ onsuccess: null, onerror: null, result: null })),
+                })),
+            })),
+            objectStoreNames: { contains: vi.fn(() => false) },
+            createObjectStore: vi.fn(),
+        },
+    })),
+};
+
+global.indexedDB = mockIndexedDB;
+
 vi.mock('framer-motion', () => {
     const isMotionProp = (prop) => [
         'initial', 'animate', 'exit', 'transition', 'variants',

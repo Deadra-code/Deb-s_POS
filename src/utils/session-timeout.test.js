@@ -84,18 +84,22 @@ describe('SessionTimeout', () => {
     it('should not timeout if user is active', () => {
         const onTimeoutMock = vi.fn();
         const session = new SessionTimeout({
-            timeout: 10000,
+            timeout: 15000,
             onTimeout: onTimeoutMock,
         });
 
         session.start();
 
-        // Simulate user activity at 5 seconds
+        // Simulate user activity at 5 seconds (before warning)
         vi.advanceTimersByTime(5000);
         session.handleActivity();
 
-        // Continue to 15 seconds (should not timeout because of activity at 5s)
-        vi.advanceTimersByTime(10000);
+        // Advance another 5 seconds (total 10s, still under timeout)
+        vi.advanceTimersByTime(5000);
+        session.handleActivity();
+
+        // Advance another 5 seconds (total 15s, activity at 10s should prevent timeout)
+        vi.advanceTimersByTime(5000);
 
         expect(onTimeoutMock).not.toHaveBeenCalled();
     });

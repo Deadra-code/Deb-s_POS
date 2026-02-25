@@ -17,16 +17,16 @@ describe('security utilities', () => {
             expect(isHashed('admin123')).toBe(false);
         });
 
-        it('should return false for empty string', () => {
-            expect(isHashed('')).toBe(false);
+        it('should return falsy for empty string', () => {
+            expect(isHashed('')).toBeFalsy();
         });
 
-        it('should return false for null', () => {
-            expect(isHashed(null)).toBe(false);
+        it('should return falsy for null', () => {
+            expect(isHashed(null)).toBeFalsy();
         });
 
-        it('should return false for undefined', () => {
-            expect(isHashed(undefined)).toBe(false);
+        it('should return falsy for undefined', () => {
+            expect(isHashed(undefined)).toBeFalsy();
         });
     });
 

@@ -1,32 +1,43 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { fetchData } from './api';
 
 describe('api service', () => {
+    const originalFetch = global.fetch;
+
     beforeEach(() => {
-        vi.stubGlobal('fetch', vi.fn());
+        global.fetch = vi.fn();
+        // Mock localStorage
+        Storage.prototype.getItem = vi.fn();
+        Storage.prototype.setItem = vi.fn();
+        Storage.prototype.removeItem = vi.fn();
+    });
+
+    afterEach(() => {
+        global.fetch = originalFetch;
+        vi.restoreAllMocks();
     });
 
     it('should construct the correct URL for GET requests', async () => {
         const mockResponse = { success: true };
-        fetch.mockResolvedValueOnce({
+        global.fetch.mockResolvedValueOnce({
             json: () => Promise.resolve(mockResponse)
         });
 
         await fetchData('getMenu');
 
-        expect(fetch).toHaveBeenCalledWith(expect.stringContaining('action=getMenu'));
+        expect(global.fetch).toHaveBeenCalledWith(expect.stringContaining('action=getMenu'));
     });
 
     it('should send a POST request with stringified body', async () => {
         const mockResponse = { success: true };
         const testBody = { foo: 'bar' };
-        fetch.mockResolvedValueOnce({
+        global.fetch.mockResolvedValueOnce({
             json: () => Promise.resolve(mockResponse)
         });
 
         await fetchData('saveOrder', 'POST', testBody);
 
-        expect(fetch).toHaveBeenCalledWith(
+        expect(global.fetch).toHaveBeenCalledWith(
             expect.any(String),
             expect.objectContaining({
                 method: 'POST',
@@ -37,7 +48,7 @@ describe('api service', () => {
 
     it('should handle fetch errors', async () => {
         const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
-        fetch.mockRejectedValueOnce(new Error('Network failure'));
+        global.fetch.mockRejectedValueOnce(new Error('Network failure'));
 
         await expect(fetchData('getMenu')).rejects.toThrow('Network failure');
 
