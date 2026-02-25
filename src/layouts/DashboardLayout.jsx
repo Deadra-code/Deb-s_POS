@@ -15,37 +15,49 @@ import { Button } from '../components/ui/Button';
 import { Toaster, useToast } from '../hooks';
 import { error } from '../utils/logger.js';
 
-const NavItem = ({ id, icon: Icon, label, view, setView }) => (
-  <button type="button"
-    onClick={() => setView(id)}
-    className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all duration-200 active:scale-95 ${
-      view === id
-        ? 'text-emerald-600 dark:text-emerald-400'
-        : 'text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300'
-    }`}
-  >
-    <Icon
-      size={24}
-      className={view === id ? 'fill-emerald-50 dark:fill-emerald-900/20' : ''}
-      strokeWidth={view === id ? 2.5 : 2}
-    />
-    <span className="text-[10px] font-medium">{label}</span>
-  </button>
-);
+const NavItem = ({ id, icon: Icon, label, view, setView }) => {
+  const handleClick = () => {
+    setView(id);
+  };
+  
+  return (
+    <button type="button"
+      onClick={handleClick}
+      className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all duration-200 active:scale-95 hover:bg-slate-50 dark:hover:bg-slate-800 ${
+        view === id
+          ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20'
+          : 'text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300'
+      }`}
+    >
+      <Icon
+        size={24}
+        className={view === id ? 'fill-emerald-50 dark:fill-emerald-900/20' : ''}
+        strokeWidth={view === id ? 2.5 : 2}
+      />
+      <span className="text-[10px] font-medium">{label}</span>
+    </button>
+  );
+};
 
-const SidebarItem = ({ id, icon: Icon, label, view, setView }) => (
-  <button type="button"
-    onClick={() => setView(id)}
-    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 mb-1 active:scale-[0.98] ${
-      view === id
-        ? 'bg-emerald-50 text-emerald-600 font-bold dark:bg-emerald-900/20 dark:text-emerald-400'
-        : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200'
-    }`}
-  >
-    <Icon size={20} strokeWidth={view === id ? 2.5 : 2} />
-    <span className="text-sm">{label}</span>
-  </button>
-);
+const SidebarItem = ({ id, icon: Icon, label, view, setView }) => {
+  const handleClick = () => {
+    setView(id);
+  };
+  
+  return (
+    <button type="button"
+      onClick={handleClick}
+      className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 mb-1 active:scale-[0.98] hover:shadow-sm ${
+        view === id
+          ? 'bg-emerald-50 text-emerald-600 font-bold dark:bg-emerald-900/20 dark:text-emerald-400 shadow-sm'
+          : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200'
+      }`}
+    >
+      <Icon size={20} strokeWidth={view === id ? 2.5 : 2} />
+      <span className="text-sm">{label}</span>
+    </button>
+  );
+};
 
 const DashboardLayout = ({ view, setView, onLogout }) => {
   const { theme, toggleTheme } = useTheme();

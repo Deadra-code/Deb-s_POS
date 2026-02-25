@@ -313,7 +313,7 @@ const POS = ({ menu, refreshData, loading: menuLoading }) => {
       title: `+1 ${item.nama}`,
       variant: 'success',
     });
-  }, [toast, haptics]);
+  }, [toast]);
 
   const handleItemClick = (item) => {
     addToCart(item);

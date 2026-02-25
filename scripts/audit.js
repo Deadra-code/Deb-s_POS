@@ -159,6 +159,25 @@ function auditUIUX() {
             result.addWarning(`Buttons without explicit type attribute (${buttonsWithoutType.length} found)`, relativePath);
         }
 
+        // Check for button click handlers without proper feedback
+        const onClickButtons = content.match(/<button[^>]*onClick/gi);
+        if (onClickButtons) {
+            const hasActiveState = /active:scale|active:opacity|:active/.test(content);
+            const hasHoverState = /hover:/.test(content);
+            if (!hasActiveState && onClickButtons.length > 2) {
+                result.addSuggestion(`Add active/hover states for better button feedback (${onClickButtons.length} buttons)`, relativePath);
+            }
+        }
+
+        // Check for Button component click handlers
+        const buttonComponentClicks = content.match(/<Button[^>]*onClick/gi);
+        if (buttonComponentClicks && buttonComponentClicks.length > 0) {
+            const hasTypeInButton = /<Button[^>]*type=/gi.test(content);
+            if (!hasTypeInButton && buttonComponentClicks.length > 2) {
+                result.addSuggestion(`Add type attribute to Button components`, relativePath);
+            }
+        }
+
         // Check for text contrast (small text)
         const smallText = content.match(/text-\[?[6-8]px\]?/g);
         if (smallText) {
