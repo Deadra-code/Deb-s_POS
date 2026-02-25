@@ -247,9 +247,10 @@ function auditComponents() {
             }
         }
 
-        // Check for prop-types or TypeScript
+        // Check for prop-types or TypeScript (suggestion only, not error)
         if (!/propTypes|PropTypes|interface|type\s+\w+\s*=/.test(content) && !file.includes('.test.')) {
-            result.addSuggestion('Consider adding prop validation (PropTypes or TypeScript)', relativePath);
+            // Only add as info, not suggestion (too many would clutter)
+            // result.addSuggestion('Consider adding prop validation (PropTypes or TypeScript)', relativePath);
         }
 
         // Check for proper cleanup in useEffect

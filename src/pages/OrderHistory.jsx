@@ -63,10 +63,16 @@ const OrderHistory = () => {
                     <h1 className="text-2xl font-black text-slate-800 dark:text-slate-100">Riwayat Pesanan</h1>
                     <p className="text-slate-500 dark:text-slate-400 text-sm">Rekap transaksi & bagi hasil.</p>
                 </div>
-                <input type="date" className="bg-white dark:bg-slate-900 border dark:border-slate-800 p-3 rounded-2xl font-black text-slate-700 dark:text-slate-200 shadow-sm focus:ring-2 focus:ring-emerald-500 outline-none transition-all" value={filterDate} onChange={e => {
-                    haptics.tick();
-                    setFilterDate(e.target.value);
-                }} />
+                <input 
+                    type="date" 
+                    aria-label="Filter by date"
+                    className="bg-white dark:bg-slate-900 border dark:border-slate-800 p-3 rounded-2xl font-black text-slate-700 dark:text-slate-200 shadow-sm focus:ring-2 focus:ring-emerald-500 outline-none transition-all" 
+                    value={filterDate} 
+                    onChange={e => {
+                        haptics.tick();
+                        setFilterDate(e.target.value);
+                    }} 
+                />
             </div>
 
             <StatsCards stats={stats} />

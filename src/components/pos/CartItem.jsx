@@ -58,14 +58,14 @@ const CartItem = ({ item, onUpdateQty }) => {
                     {/* Variants */}
                     {variants.length > 0 && (
                         <div className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold uppercase tracking-wide">
-                            {variants.map(v => v.name.includes(':') ? v.name.split(':')[1].trim() : v.name).join(', ')}
+                            {variants.map((v, idx) => v.name.includes(':') ? v.name.split(':')[1].trim() : v.name).join(', ')}
                         </div>
                     )}
 
                     {/* Add-ons */}
                     {addons.length > 0 && (
                         <div className="text-[10px] text-blue-500 dark:text-blue-400 italic">
-                            + {addons.map(m => m.name.replace('Tambah ', '')).join(', ')}
+                            + {addons.map((m, idx) => m.name.replace('Tambah ', '')).join(', ')}
                         </div>
                     )}
 
